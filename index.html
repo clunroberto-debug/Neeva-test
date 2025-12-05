@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <title>Neeva – Prototype Turn System</title>
+  <title>Neeva – Prototype</title>
   <style>
     body {
       font-family: system-ui, sans-serif;
@@ -10,829 +10,728 @@
       color: #e5e7eb;
       margin: 0;
       padding: 0;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
     }
-    header {
-      padding: 10px 16px;
-      background: #020617;
-      border-bottom: 1px solid #1f2937;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    h1, h2, h3 {
+      margin: 0.4rem 0;
     }
-    h1 {
-      font-size: 18px;
-      margin: 0;
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1rem;
     }
-    #game {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding: 8px;
-    }
-    .row {
+    .board {
       display: flex;
       justify-content: space-between;
-      gap: 8px;
-      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1rem;
     }
     .panel {
+      flex: 1;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
       background: #020617;
       border: 1px solid #1f2937;
-      border-radius: 8px;
-      padding: 8px;
-      flex: 1;
-      min-width: 260px;
     }
     .panel h2 {
-      font-size: 14px;
-      margin-top: 0;
-      margin-bottom: 6px;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
     }
-    .champions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .champion {
-      flex: 1;
-      min-width: 140px;
-      background: #111827;
-      border-radius: 8px;
-      padding: 6px;
-      border: 1px solid #1f2937;
-      cursor: default;
-      position: relative;
-    }
-    .champion.dead {
-      opacity: 0.4;
-    }
-    .champion.selectable {
-      outline: 2px solid #fbbf24;
+    .hero {
+      border-radius: 0.5rem;
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+      border: 1px solid #374151;
       cursor: pointer;
     }
-    .champion h3 {
-      margin: 0 0 4px;
-      font-size: 13px;
+    .hero.selected-target {
+      outline: 2px solid #fbbf24;
+    }
+    .hero h3 {
+      font-size: 1rem;
     }
     .stat-line {
-      font-size: 11px;
+      font-size: 0.85rem;
       line-height: 1.3;
     }
-    .stat-label {
-      color: #9ca3af;
+    .stat-bonus {
+      color: #22c55e;
     }
-    .buffs, .debuffs {
-      margin-top: 4px;
-      font-size: 10px;
+    .hp-bar {
+      width: 100%;
+      height: 10px;
+      background: #374151;
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 0.25rem 0 0.4rem;
     }
-    .buffs span {
-      background: #064e3b;
-      color: #bbf7d0;
-      padding: 1px 4px;
-      border-radius: 4px;
-      margin-right: 3px;
-      margin-bottom: 2px;
-      display: inline-block;
+    .hp-fill {
+      height: 100%;
+      background: #22c55e;
     }
-    .debuffs span {
-      background: #7f1d1d;
-      color: #fecaca;
-      padding: 1px 4px;
-      border-radius: 4px;
-      margin-right: 3px;
-      margin-bottom: 2px;
-      display: inline-block;
-    }
+
     .hand {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 0.5rem;
     }
     .card {
+      flex: 0 0 180px;
+      border-radius: 0.5rem;
+      border: 1px solid #4b5563;
+      padding: 0.4rem 0.5rem;
       background: #111827;
-      border-radius: 8px;
-      padding: 6px;
-      border: 1px solid #374151;
-      min-width: 150px;
-      max-width: 180px;
+      font-size: 0.8rem;
       cursor: pointer;
-      font-size: 11px;
       position: relative;
     }
-    .card.unplayable {
+    .card.used {
       opacity: 0.4;
       cursor: not-allowed;
     }
     .card.selected {
-      outline: 2px solid #fbbf24;
+      outline: 2px solid #3b82f6;
     }
     .card-title {
       font-weight: 600;
-      margin-bottom: 2px;
+      margin-bottom: 0.15rem;
     }
     .card-cost {
       position: absolute;
       top: 4px;
       right: 6px;
-      font-size: 11px;
-      background: #1e3a8a;
+      font-size: 0.7rem;
+      padding: 0.1rem 0.3rem;
       border-radius: 999px;
-      padding: 2px 6px;
+      background: #0f172a;
+      border: 1px solid #1d4ed8;
     }
-    .log {
-      font-size: 11px;
-      max-height: 200px;
-      overflow-y: auto;
-      background: #020617;
-      border-radius: 6px;
-      border: 1px solid #1f2937;
-      padding: 6px;
-      white-space: pre-line;
+    .card-type {
+      font-size: 0.7rem;
+      opacity: 0.7;
+      margin-bottom: 0.15rem;
     }
+    .card-desc {
+      font-size: 0.75rem;
+      line-height: 1.25;
+    }
+
     .controls {
+      margin-top: 0.75rem;
       display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 4px;
       flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
     }
     button {
-      border-radius: 999px;
+      border-radius: 0.5rem;
       border: none;
-      padding: 6px 10px;
-      font-size: 12px;
+      padding: 0.4rem 0.7rem;
+      font-size: 0.8rem;
       cursor: pointer;
-      background: #4b5563;
+      background: #1d4ed8;
       color: #e5e7eb;
     }
-    button.primary {
-      background: #2563eb;
+    button.secondary {
+      background: #374151;
+    }
+    button.danger {
+      background: #b91c1c;
     }
     button:disabled {
-      opacity: 0.4;
+      opacity: 0.35;
       cursor: not-allowed;
     }
-    .mana-info {
-      font-size: 12px;
+    .mana {
+      font-size: 0.9rem;
     }
-    .phase-info {
-      font-size: 12px;
-      color: #fbbf24;
-    }
-    @media (max-width: 768px) {
-      header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
-      }
+
+    .log {
+      margin-top: 1rem;
+      padding: 0.5rem 0.6rem;
+      background: #020617;
+      border-radius: 0.5rem;
+      border: 1px solid #1f2937;
+      font-size: 0.8rem;
+      max-height: 200px;
+      overflow-y: auto;
+      white-space: pre-wrap;
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Neeva – Prototype</h1>
-    <button id="newGameBtn">Nuova Partita</button>
-  </header>
+  <div class="container">
+    <h1>Neeva – Prototype Turno a Carte</h1>
+    <p style="font-size:0.85rem;opacity:0.8;">
+      Turno: Pescata 3 → Mana pieno → scegli carte (il mana scala ma le carte non si attivano) → <b>Risolvi turno</b> → gioca il bot.
+    </p>
 
-  <div id="game">
-    <div class="row">
-      <div class="panel" id="enemyPanel">
-        <h2>Bot</h2>
-        <div class="champions" id="enemyChampions"></div>
-      </div>
-      <div class="panel" id="playerPanel">
+    <div class="board">
+      <div class="panel" id="player-panel">
         <h2>Tu</h2>
-        <div class="champions" id="playerChampions"></div>
+        <div class="hero" id="player-hero" onclick="onHeroClick('bot')">
+          <h3>Basil (Tu)</h3>
+          <div class="hp-bar"><div class="hp-fill" id="player-hp-fill"></div></div>
+          <div class="stat-line" id="player-stats"></div>
+        </div>
+      </div>
+      <div class="panel" id="bot-panel">
+        <h2>Bot</h2>
+        <div class="hero" id="bot-hero" onclick="onHeroClick('player')">
+          <h3>Mordel (Bot)</h3>
+          <div class="hp-bar"><div class="hp-fill" id="bot-hp-fill"></div></div>
+          <div class="stat-line" id="bot-stats"></div>
+        </div>
       </div>
     </div>
 
     <div class="panel">
       <h2>La tua mano</h2>
-      <div class="hand" id="playerHand"></div>
+      <div class="mana" id="mana-display"></div>
+      <div class="hand" id="hand"></div>
       <div class="controls">
-        <span class="mana-info" id="manaInfo"></span>
-        <span class="phase-info" id="phaseInfo"></span>
-        <button id="resolveBtn" class="primary">Risolvi carte &amp; Fine turno</button>
+        <button onclick="resolveTurn()" id="resolve-btn">Risolvi turno</button>
+        <button class="secondary" onclick="resetTurn()" id="reset-btn">Reset turno</button>
+        <button class="secondary" onclick="startNewGame()">Nuova partita</button>
+        <span id="info" style="font-size:0.8rem;opacity:0.8;"></span>
       </div>
     </div>
 
-    <div class="panel">
-      <h2>Log</h2>
-      <div class="log" id="log"></div>
-    </div>
+    <div class="log" id="log"></div>
   </div>
 
   <script>
-    // --- CONFIG ---
+    // =========================
+    // DEFINIZIONI DI BASE
+    // =========================
     const MAX_MANA = 7;
     const INITIAL_HAND = 7;
     const DRAW_PER_TURN = 3;
-    const MAX_HAND = 11;
 
-    // --- CARD DEFINITIONS ---
-    const CARD_LIBRARY = {
-      lightAttack: {
-        id: 'lightAttack',
-        name: 'Attacco Leggero',
+    const cardDefinitions = {
+      // Solo pochi esempi per il prototipo
+      // type: 'attack' | 'buffSelf' | 'buffAllies' ...
+      // target: 'enemy' | 'ally' | 'self' | 'aoeEnemy'
+      "basil_basic_strike": {
+        id: "basil_basic_strike",
+        owner: "Basil",
+        name: "Colpo di Scisto",
         cost: 1,
-        target: 'enemy', // enemy | ally | self | all_enemies | all_allies
-        description: 'Attacco singolo: infligge il 40% del tuo ATK al bersaglio.',
-        effect: (game, ownerSide, actorIndex, targetSide, targetIndex) => {
-          const attacker = getChampion(game, ownerSide, actorIndex);
-          const defender = getChampion(game, targetSide, targetIndex);
-          if (!attacker || !defender || defender.hp <= 0) return;
-          const atk = attacker.baseAtk + attacker.atkBonus;
-          const def = defender.baseDef + defender.defBonus;
-          const raw = Math.round(atk * 0.4);
-          const dmg = Math.max(0, raw - def);
-          defender.hp = Math.max(0, defender.hp - dmg);
-          log(game, `${attacker.name} colpisce ${defender.name} per ${dmg} danni (ATT 40%).`);
-        }
+        type: "attack",
+        target: "enemy",
+        aoe: false,
+        vc: 0.40,
+        desc: "Basil – Attacco singolo VC 40%.",
       },
-      heavyAttack: {
-        id: 'heavyAttack',
-        name: 'Attacco Potenziato',
+      "basil_shield": {
+        id: "basil_shield",
+        owner: "Basil",
+        name: "Muro di Scisti",
         cost: 2,
-        target: 'enemy',
-        description: 'Attacco singolo: infligge il 70% del tuo ATK. Se il bersaglio è già danneggiato, +20% danni finali.',
-        effect: (game, ownerSide, actorIndex, targetSide, targetIndex) => {
-          const attacker = getChampion(game, ownerSide, actorIndex);
-          const defender = getChampion(game, targetSide, targetIndex);
-          if (!attacker || !defender || defender.hp <= 0) return;
-          const atk = attacker.baseAtk + attacker.atkBonus;
-          const def = defender.baseDef + defender.defBonus;
-          let raw = atk * 0.7;
-          if (defender.hp < defender.baseHp) {
-            raw *= 1.2;
-          }
-          const dmg = Math.max(0, Math.round(raw) - def);
-          defender.hp = Math.max(0, defender.hp - dmg);
-          log(game, `${attacker.name} usa Attacco Potenziato su ${defender.name} per ${dmg} danni.`);
-        }
+        type: "buffSelf",
+        target: "self",
+        aoe: false,
+        desc: "Basil – +5 DEF permanente e cura 20 HP.",
       },
-      singleHeal: {
-        id: 'singleHeal',
-        name: 'Cura Mirata',
-        cost: 2,
-        target: 'ally',
-        description: 'Cura un alleato del 30% dei suoi LP massimi.',
-        effect: (game, ownerSide, actorIndex, targetSide, targetIndex) => {
-          const target = getChampion(game, targetSide, targetIndex);
-          if (!target || target.hp <= 0) return;
-          const heal = Math.round(target.baseHp * 0.3);
-          const oldHp = target.hp;
-          target.hp = Math.min(target.baseHp + target.hpBonus, target.hp + heal);
-          log(game, `${target.name} viene curato di ${target.hp - oldHp} LP.`);
-        }
-      },
-      atkBuff: {
-        id: 'atkBuff',
-        name: 'Furia Offensiva',
-        cost: 2,
-        target: 'ally',
-        description: 'Per questo turno, +15 ATK al bersaglio.',
-        effect: (game, ownerSide, actorIndex, targetSide, targetIndex) => {
-          const target = getChampion(game, targetSide, targetIndex);
-          if (!target || target.hp <= 0) return;
-          target.atkBonus += 15;
-          target.temporaryBuffs.push({ type: 'atk', amount: 15 });
-          log(game, `${target.name} ottiene +15 ATK per questo turno.`);
-        }
-      },
-      defDebuff: {
-        id: 'defDebuff',
-        name: 'Rottura Difensiva',
-        cost: 2,
-        target: 'enemy',
-        description: 'Applica -10 DEF al bersaglio per questo turno.',
-        effect: (game, ownerSide, actorIndex, targetSide, targetIndex) => {
-          const target = getChampion(game, targetSide, targetIndex);
-          if (!target || target.hp <= 0) return;
-          target.defBonus -= 10;
-          target.temporaryBuffs.push({ type: 'def', amount: -10 });
-          log(game, `${target.name} subisce -10 DEF per questo turno.`);
-        }
-      },
-      aoeAttack: {
-        id: 'aoeAttack',
-        name: 'Esplosione AOE',
+      "basil_aoe": {
+        id: "basil_aoe",
+        owner: "Basil",
+        name: "Fronte Minerale (AOE)",
         cost: 3,
-        target: 'all_enemies',
-        description: 'Attacca tutti i nemici per il 30% del tuo ATK.',
-        effect: (game, ownerSide, actorIndex) => {
-          const enemiesSide = ownerSide === 'player' ? 'bot' : 'player';
-          const attacker = getChampion(game, ownerSide, actorIndex);
-          const list = game[enemiesSide].champions;
-          if (!attacker) return;
-          const atk = attacker.baseAtk + attacker.atkBonus;
-          list.forEach((defender, idx) => {
-            if (!defender || defender.hp <= 0) return;
-            const def = defender.baseDef + defender.defBonus;
-            const raw = Math.round(atk * 0.3);
-            const dmg = Math.max(0, raw - def);
-            defender.hp = Math.max(0, defender.hp - dmg);
-            log(game, `${attacker.name} colpisce tutti: ${defender.name} subisce ${dmg} danni.`);
-          });
-        }
+        type: "attack",
+        target: "aoeEnemy",
+        aoe: true,
+        vc: 0.30,
+        desc: "Basil – Attacco AOE VC 30%. Non richiede bersaglio.",
+      },
+      "mordel_basic_strike": {
+        id: "mordel_basic_strike",
+        owner: "Mordel",
+        name: "Artiglio della Terra",
+        cost: 1,
+        type: "attack",
+        target: "enemy",
+        aoe: false,
+        vc: 0.40,
+        desc: "Mordel – Attacco singolo VC 40%.",
+      },
+      "mordel_debuff": {
+        id: "mordel_debuff",
+        owner: "Mordel",
+        name: "Sotterramento",
+        cost: 2,
+        type: "debuff",
+        target: "enemy",
+        aoe: false,
+        desc: "Mordel – -5 DEF permanente al bersaglio.",
+      },
+      "mordel_aoe": {
+        id: "mordel_aoe",
+        owner: "Mordel",
+        name: "Crepa Tellurica (AOE)",
+        cost: 3,
+        type: "attack",
+        target: "aoeEnemy",
+        aoe: true,
+        vc: 0.25,
+        desc: "Mordel – Attacco AOE VC 25%. Non richiede bersaglio.",
       }
     };
 
-    // --- GAME STATE ---
-    const game = {
-      turnCountPlayer: 0,
-      turnCountBot: 0,
-      phase: 'player', // 'player' | 'bot'
-      player: null,
-      bot: null,
-      queue: [], // azioni del turno corrente
-      selectedCardIndex: null,
-      selectingTarget: false,
-      pendingCard: null,
-      pendingActorIndex: null,
-      pendingTargetType: null
-    };
+    // =========================
+    // STATO DI GIOCO
+    // =========================
+    let game = null;
+    let turnBackup = null; // snapshot JSON per reset turno
+    let selectedCardIndex = null; // indice carta selezionata nella mano
+    let pendingPlays = []; // queue delle carte da risolvere
+    let selectingTargetFor = null; // { cardIndex, cardId }
 
-    function makeChampion(name, hp, atk, def) {
+    function createInitialGameState() {
       return {
-        name,
-        baseHp: hp,
-        hpBonus: 0,
-        hp,
-        baseAtk: atk,
-        atkBonus: 0,
-        baseDef: def,
-        defBonus: 0,
-        temporaryBuffs: [], // si resettano a fine turno del proprietario
-        debuffs: []         // simbolico, per futuro
+        turnNumber: 1,
+        currentPlayer: "player", // "player" o "bot"
+        player: {
+          name: "Basil",
+          maxHp: 1000,
+          hp: 1000,
+          baseAtk: 80,
+          baseDef: 40,
+          atkBonus: 0,
+          defBonus: 0
+        },
+        bot: {
+          name: "Mordel",
+          maxHp: 1000,
+          hp: 1000,
+          baseAtk: 75,
+          baseDef: 35,
+          atkBonus: 0,
+          defBonus: 0
+        },
+        playerMana: MAX_MANA,
+        botMana: MAX_MANA,
+        playerDeck: [],
+        botDeck: [],
+        playerHand: [],
+        botHand: [],
+        playerGraveyard: [],
+        botGraveyard: []
       };
     }
 
-    function createDeck() {
-      // deck super semplice: 3x light, 2x heavy, 2x heal, 2x atkBuff, 2x defDebuff, 1x aoe
-      const ids = [
-        'lightAttack','lightAttack','lightAttack',
-        'heavyAttack','heavyAttack',
-        'singleHeal','singleHeal',
-        'atkBuff','atkBuff',
-        'defDebuff','defDebuff',
-        'aoeAttack'
-      ];
-      const deck = [];
-      ids.forEach(id => deck.push({ ...CARD_LIBRARY[id] }));
-      // shuffle
-      for (let i = deck.length - 1; i > 0; i--) {
+    function buildDeck(owner) {
+      // Deck molto semplice per il prototipo
+      const ids = owner === "player"
+        ? [
+            "basil_basic_strike",
+            "basil_basic_strike",
+            "basil_basic_strike",
+            "basil_shield",
+            "basil_shield",
+            "basil_aoe",
+            "basil_aoe"
+          ]
+        : [
+            "mordel_basic_strike",
+            "mordel_basic_strike",
+            "mordel_basic_strike",
+            "mordel_debuff",
+            "mordel_debuff",
+            "mordel_aoe",
+            "mordel_aoe"
+          ];
+      // semplice shuffle
+      for (let i = ids.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [deck[i], deck[j]] = [deck[j], deck[i]];
+        [ids[i], ids[j]] = [ids[j], ids[i]];
       }
-      return deck;
+      return ids;
     }
 
-    function initGame() {
-      game.player = {
-        champions: [
-          makeChampion('Basil', 1000, 60, 40),
-          makeChampion('Gael', 900, 70, 25),
-          makeChampion('Zagrok', 850, 68, 22)
-        ],
-        deck: createDeck(),
-        hand: [],
-        mana: MAX_MANA,
-        manaBonus: 0
-      };
-      game.bot = {
-        champions: [
-          makeChampion('Mordel', 1020, 60, 35),
-          makeChampion('Kiddou', 820, 58, 23),
-          makeChampion('Rindu', 860, 78, 20)
-        ],
-        deck: createDeck(),
-        hand: [],
-        mana: MAX_MANA,
-        manaBonus: 0
-      };
-      game.turnCountPlayer = 0;
-      game.turnCountBot = 0;
-      game.queue = [];
-      game.selectedCardIndex = null;
-      game.selectingTarget = false;
-      game.pendingCard = null;
-      game.pendingActorIndex = null;
-      game.pendingTargetType = null;
-      clearLog();
-
-      // mano iniziale 7 per entrambi
-      drawCards('player', INITIAL_HAND);
-      drawCards('bot', INITIAL_HAND);
-
-      // inizia il giocatore
-      startPlayerTurn();
-      renderAll();
-      log(game, 'Nuova partita iniziata.');
+    function drawCards(owner, n) {
+      const deckKey = owner === "player" ? "playerDeck" : "botDeck";
+      const handKey = owner === "player" ? "playerHand" : "botHand";
+      for (let i = 0; i < n; i++) {
+        if (game[deckKey].length === 0) break;
+        if (game[handKey].length >= 11) break; // limite mano
+        const cardId = game[deckKey].shift();
+        game[handKey].push({ id: cardId, used: false });
+      }
     }
 
-    // --- DRAW / MANA ---
-    function drawCards(side, count) {
-      const p = game[side];
-      for (let i = 0; i < count; i++) {
-        if (p.deck.length === 0) break;
-        const card = p.deck.shift();
-        p.hand.push(card);
-      }
-      // overflow mano
-      while (p.hand.length > MAX_HAND) {
-        const discarded = p.hand.pop();
-        p.deck.push(discarded);
-        p.manaBonus = (p.manaBonus || 0) + 1;
-        if (side === 'player') {
-          log(game, `Overflow mano: 1 carta rimessa in fondo al deck. +1 mana bonus questo turno.`);
+    function log(msg) {
+      const logEl = document.getElementById("log");
+      logEl.textContent += msg + "\n";
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function startNewGame() {
+      game = createInitialGameState();
+      game.playerDeck = buildDeck("player");
+      game.botDeck = buildDeck("bot");
+      pendingPlays = [];
+      selectedCardIndex = null;
+      selectingTargetFor = null;
+
+      // mano iniziale 7
+      drawCards("player", INITIAL_HAND);
+      drawCards("bot", INITIAL_HAND);
+
+      // snapshot inizio turno per reset
+      turnBackup = JSON.stringify(game);
+      render();
+      log("Nuova partita iniziata. Tocca a te (Turno 1).");
+    }
+
+    // =========================
+    // RENDER UI
+    // =========================
+    function render() {
+      renderHeroes();
+      renderHand();
+      renderMana();
+      updateInfo();
+    }
+
+    function renderHeroes() {
+      const p = game.player;
+      const b = game.bot;
+
+      // player
+      let pAtkTotal = p.baseAtk + p.atkBonus;
+      let pDefTotal = p.baseDef + p.defBonus;
+      document.getElementById("player-stats").innerHTML =
+        `HP: ${p.hp}/${p.maxHp}<br>` +
+        `ATK: ${p.baseAtk} <span class="stat-bonus">(+${p.atkBonus})</span> = ${pAtkTotal}<br>` +
+        `DEF: ${p.baseDef} <span class="stat-bonus">(+${p.defBonus})</span> = ${pDefTotal}`;
+
+      const pFill = document.getElementById("player-hp-fill");
+      pFill.style.width = Math.max(0, (p.hp / p.maxHp) * 100) + "%";
+
+      // bot
+      let bAtkTotal = b.baseAtk + b.atkBonus;
+      let bDefTotal = b.baseDef + b.defBonus;
+      document.getElementById("bot-stats").innerHTML =
+        `HP: ${b.hp}/${b.maxHp}<br>` +
+        `ATK: ${b.baseAtk} <span class="stat-bonus">(+${b.atkBonus})</span> = ${bAtkTotal}<br>` +
+        `DEF: ${b.baseDef} <span class="stat-bonus">(+${b.defBonus})</span> = ${bDefTotal}`;
+
+      const bFill = document.getElementById("bot-hp-fill");
+      bFill.style.width = Math.max(0, (b.hp / b.maxHp) * 100) + "%";
+
+      // target highlight (se stiamo scegliendo un bersaglio)
+      document.getElementById("player-hero").classList.remove("selected-target");
+      document.getElementById("bot-hero").classList.remove("selected-target");
+      if (selectingTargetFor) {
+        const cardDef = cardDefinitions[selectingTargetFor.cardId];
+        if (cardDef.target === "enemy") {
+          // se il giocatore usa una carta, il nemico è il bot
+          if (game.currentPlayer === "player") {
+            document.getElementById("bot-hero").classList.add("selected-target");
+          } else {
+            document.getElementById("player-hero").classList.add("selected-target");
+          }
+        } else if (cardDef.target === "ally" || cardDef.target === "self") {
+          if (game.currentPlayer === "player") {
+            document.getElementById("player-hero").classList.add("selected-target");
+          } else {
+            document.getElementById("bot-hero").classList.add("selected-target");
+          }
         }
+      }
+    }
+
+    function renderHand() {
+      const handEl = document.getElementById("hand");
+      handEl.innerHTML = "";
+      if (game.currentPlayer !== "player") return;
+
+      game.playerHand.forEach((c, index) => {
+        const def = cardDefinitions[c.id];
+        const cardDiv = document.createElement("div");
+        cardDiv.className = "card";
+        if (c.used) cardDiv.classList.add("used");
+        if (selectedCardIndex === index) cardDiv.classList.add("selected");
+
+        const fullName = `${def.owner} – ${def.name}`;
+
+        cardDiv.innerHTML = `
+          <div class="card-title">${fullName}</div>
+          <div class="card-cost">${def.cost}💧</div>
+          <div class="card-type">${def.aoe ? "AOE " : ""}${def.type}</div>
+          <div class="card-desc">${def.desc}</div>
+        `;
+        cardDiv.onclick = () => onCardClick(index);
+        handEl.appendChild(cardDiv);
+      });
+    }
+
+    function renderMana() {
+      const mana = game.playerMana;
+      document.getElementById("mana-display").textContent =
+        `Mana: ${mana}/${MAX_MANA} | Carte in mano: ${game.playerHand.length}`;
+    }
+
+    function updateInfo(message) {
+      const infoEl = document.getElementById("info");
+      if (message) {
+        infoEl.textContent = message;
+      } else if (selectingTargetFor) {
+        infoEl.textContent = "Seleziona un bersaglio cliccando sul PG giusto.";
+      } else {
+        infoEl.textContent = "Seleziona carte (il mana scala), poi clicca su 'Risolvi turno'.";
+      }
+    }
+
+    // =========================
+    // INTERAZIONE GIOCATORE
+    // =========================
+    function onCardClick(index) {
+      if (game.currentPlayer !== "player") return;
+      const card = game.playerHand[index];
+      if (card.used) return;
+
+      const def = cardDefinitions[card.id];
+      if (def.cost > game.playerMana) {
+        updateInfo("Mana insufficiente per questa carta.");
+        return;
+      }
+
+      // AOE: non richiede bersaglio → si aggiunge direttamente alla coda
+      if (def.aoe || def.target === "self") {
+        game.playerMana -= def.cost;
+        card.used = true;
+        pendingPlays.push({
+          owner: "player",
+          cardId: card.id,
+          target: null
+        });
+        render();
+        updateInfo(def.aoe ? "Carta AOE aggiunta alla coda." : "Carta aggiunta alla coda.");
+        return;
+      }
+
+      // Carta a bersaglio singolo → entra in modalità selezione bersaglio
+      selectedCardIndex = index;
+      selectingTargetFor = { cardIndex: index, cardId: card.id };
+      render();
+      updateInfo("Seleziona il bersaglio cliccando sul PG.");
+    }
+
+    function onHeroClick(sideClicked) {
+      // sideClicked: "player" o "bot" → chi è stato cliccato
+      if (!selectingTargetFor) return;
+      if (game.currentPlayer !== "player") return;
+
+      const card = game.playerHand[selectingTargetFor.cardIndex];
+      const def = cardDefinitions[card.id];
+
+      // Controllo coerenza bersaglio
+      if (def.target === "enemy" && sideClicked === "player") {
+        updateInfo("Questa carta richiede un NEMICO come bersaglio.");
+        return;
+      }
+      if ((def.target === "ally" || def.target === "self") && sideClicked === "bot") {
+        updateInfo("Questa carta richiede un ALLEATO come bersaglio.");
+        return;
+      }
+
+      // Scala mana, marca la carta, aggiunge alla coda
+      if (def.cost > game.playerMana) {
+        updateInfo("Mana insufficiente.");
+        return;
+      }
+
+      game.playerMana -= def.cost;
+      card.used = true;
+      pendingPlays.push({
+        owner: "player",
+        cardId: card.id,
+        target: sideClicked // "player" o "bot"
+      });
+
+      // Esce da modalità selezione
+      selectedCardIndex = null;
+      selectingTargetFor = null;
+      render();
+      updateInfo("Carta aggiunta alla coda. Puoi selezionare altre carte o 'Risolvi turno'.");
+    }
+
+    function resetTurn() {
+      if (!turnBackup) return;
+      game = JSON.parse(turnBackup);
+      pendingPlays = [];
+      selectedCardIndex = null;
+      selectingTargetFor = null;
+      render();
+      log("Turno resettato allo stato iniziale del turno.");
+    }
+
+    function resolveTurn() {
+      if (game.currentPlayer !== "player") return;
+      if (pendingPlays.length === 0) {
+        updateInfo("Non hai selezionato nessuna carta da risolvere.");
+        return;
+      }
+
+      log(`--- Risoluzione carte giocatore (Turno ${game.turnNumber}) ---`);
+      // Applica in ordine
+      for (const play of pendingPlays) {
+        resolveCard(play);
+      }
+      pendingPlays = [];
+      selectedCardIndex = null;
+      selectingTargetFor = null;
+
+      checkEndGame();
+      if (isGameOver()) return;
+
+      // Fine turno giocatore → tocca al bot
+      game.currentPlayer = "bot";
+      render();
+      setTimeout(botTurn, 600);
+    }
+
+    // =========================
+    // RISOLUZIONE CARTE
+    // =========================
+    function getUnit(side) {
+      return side === "player" ? game.player : game.bot;
+    }
+
+    function resolveCard(play) {
+      const def = cardDefinitions[play.cardId];
+      const ownerUnit = play.owner === "player" ? game.player : game.bot;
+      const enemyUnit = play.owner === "player" ? game.bot : game.player;
+
+      log(`${def.owner} usa ${def.name}.`);
+
+      switch (def.type) {
+        case "attack":
+          if (def.target === "aoeEnemy") {
+            // In questo prototipo è 1v1, quindi AOE = singolo
+            const dmg = computeDamage(ownerUnit, enemyUnit, def.vc || 0.3);
+            enemyUnit.hp = Math.max(0, enemyUnit.hp - dmg);
+            log(`Attacco AOE colpisce ${enemyUnit.name} per ${dmg} danni.`);
+          } else {
+            const targetUnit = play.target === "player"
+              ? (play.owner === "player" ? game.player : game.bot)
+              : (play.owner === "player" ? game.bot : game.player);
+            const dmg = computeDamage(ownerUnit, targetUnit, def.vc || 0.4);
+            targetUnit.hp = Math.max(0, targetUnit.hp - dmg);
+            log(`${ownerUnit.name} infligge ${dmg} danni a ${targetUnit.name}.`);
+          }
+          break;
+        case "buffSelf":
+          ownerUnit.defBonus += 5;
+          ownerUnit.hp = Math.min(ownerUnit.maxHp, ownerUnit.hp + 20);
+          log(`${ownerUnit.name} guadagna +5 DEF permanente e cura 20 HP.`);
+          break;
+        case "debuff":
+          // -5 DEF permanente al bersaglio
+          const target = play.owner === "player" ? game.bot : game.player;
+          target.defBonus -= 5;
+          log(`${target.name} perde 5 DEF permanenti.`);
+          break;
+        default:
+          log("Tipo carta non implementato nel prototipo.");
+      }
+
+      render();
+      checkEndGame();
+    }
+
+    function computeDamage(attacker, defender, vc) {
+      const atk = attacker.baseAtk + attacker.atkBonus;
+      const def = defender.baseDef + defender.defBonus;
+      const raw = Math.floor(atk * vc);
+      const dmg = Math.max(0, raw - def);
+      return dmg;
+    }
+
+    function checkEndGame() {
+      if (game.player.hp <= 0 && game.bot.hp <= 0) {
+        log("Pareggio: entrambi sconfitti.");
+      } else if (game.player.hp <= 0) {
+        log("Hai perso.");
+      } else if (game.bot.hp <= 0) {
+        log("Hai vinto!");
+      }
+    }
+
+    function isGameOver() {
+      return game.player.hp <= 0 || game.bot.hp <= 0;
+    }
+
+    // =========================
+    // TURNO DEL BOT
+    // =========================
+    function botTurn() {
+      if (isGameOver()) return;
+
+      // Inizio turno bot: mana full + pescata 3 + snapshot per reset interno (anche se non la usiamo)
+      game.botMana = MAX_MANA;
+      drawCards("bot", DRAW_PER_TURN);
+      render();
+      log(`--- Turno ${game.turnNumber} del BOT ---`);
+
+      // Semplice IA: gioca fino a 2 carte se ha mana
+      let plays = 0;
+      while (plays < 2) {
+        const playableIndices = game.botHand
+          .map((c, idx) => ({ c, idx }))
+          .filter(obj => !obj.c.used && cardDefinitions[obj.c.id].cost <= game.botMana);
+        if (playableIndices.length === 0) break;
+
+        const choice = playableIndices[Math.floor(Math.random() * playableIndices.length)];
+        const cardId = choice.c.id;
+        const def = cardDefinitions[cardId];
+
+        game.botMana -= def.cost;
+        choice.c.used = true;
+
+        const play = {
+          owner: "bot",
+          cardId: cardId,
+          target: null
+        };
+
+        if (!def.aoe && def.target === "enemy") {
+          play.target = "player";
+        } else if (!def.aoe && (def.target === "ally" || def.target === "self")) {
+          play.target = "bot";
+        }
+
+        resolveCard(play);
+        if (isGameOver()) break;
+        plays++;
+      }
+
+      if (!isGameOver()) {
+        // Fine turno bot → nuovo turno giocatore
+        game.turnNumber += 1;
+        startPlayerTurn();
       }
     }
 
     function startPlayerTurn() {
-      game.phase = 'player';
-      game.turnCountPlayer += 1;
-      // reset buff temporanei del player
-      resetTemporaryBuffs('player');
-      // pesca 3
-      drawCards('player', DRAW_PER_TURN);
-      // mana pieno + bonus overflow
-      const bonus = game.player.manaBonus || 0;
-      game.player.mana = MAX_MANA + bonus;
-      game.player.manaBonus = 0;
-      game.queue = [];
-      game.selectedCardIndex = null;
-      game.selectingTarget = false;
-      game.pendingCard = null;
-      game.pendingActorIndex = null;
-      game.pendingTargetType = null;
-      log(game, `--- Tuo turno ${game.turnCountPlayer} ---`);
-      renderAll();
+      game.currentPlayer = "player";
+      game.playerMana = MAX_MANA;
+      drawCards("player", DRAW_PER_TURN);
+      pendingPlays = [];
+      selectedCardIndex = null;
+      selectingTargetFor = null;
+      turnBackup = JSON.stringify(game); // snapshot per reset turno
+      render();
+      log(`--- Turno ${game.turnNumber} tuo ---`);
     }
 
-    function startBotTurn() {
-      game.phase = 'bot';
-      game.turnCountBot += 1;
-      resetTemporaryBuffs('bot');
-      drawCards('bot', DRAW_PER_TURN);
-      const bonus = game.bot.manaBonus || 0;
-      game.bot.mana = MAX_MANA + bonus;
-      game.bot.manaBonus = 0;
-      game.queue = [];
-      game.selectedCardIndex = null;
-      game.selectingTarget = false;
-      game.pendingCard = null;
-      game.pendingActorIndex = null;
-      game.pendingTargetType = null;
-      log(game, `--- Turno Bot ${game.turnCountBot} ---`);
-      renderAll();
-      // Bot gioca subito
-      botPlay();
-    }
-
-    function resetTemporaryBuffs(side) {
-      const champs = game[side].champions;
-      champs.forEach(ch => {
-        ch.temporaryBuffs.forEach(buff => {
-          if (buff.type === 'atk') ch.atkBonus -= buff.amount;
-          if (buff.type === 'def') ch.defBonus -= buff.amount;
-        });
-        ch.temporaryBuffs = [];
-      });
-    }
-
-    // --- UTILS ---
-    function getChampion(game, side, index) {
-      const arr = game[side].champions;
-      if (!arr[index]) return null;
-      return arr[index];
-    }
-
-    function isAlive(side) {
-      return game[side].champions.some(ch => ch.hp > 0);
-    }
-
-    function checkWin() {
-      if (!isAlive('player') && !isAlive('bot')) {
-        log(game, 'Pareggio: tutti i campioni sono caduti.');
-        alert('Pareggio!');
-        return true;
-      }
-      if (!isAlive('player')) {
-        log(game, 'Hai perso! Tutti i tuoi campioni sono caduti.');
-        alert('Hai perso!');
-        return true;
-      }
-      if (!isAlive('bot')) {
-        log(game, 'Hai vinto! Tutti i campioni avversari sono caduti.');
-        alert('Hai vinto!');
-        return true;
-      }
-      return false;
-    }
-
-    // --- LOG ---
-    function log(game, msg) {
-      const el = document.getElementById('log');
-      el.textContent += msg + '\n';
-      el.scrollTop = el.scrollHeight;
-    }
-
-    function clearLog() {
-      const el = document.getElementById('log');
-      el.textContent = '';
-    }
-
-    // --- PLAYER INTERACTION ---
-    function onCardClick(index) {
-      if (game.phase !== 'player') return;
-      const card = game.player.hand[index];
-      if (!card) return;
-      if (card.cost > game.player.mana) return;
-
-      // seleziona/deseleziona
-      if (game.selectedCardIndex === index && !game.selectingTarget) {
-        game.selectedCardIndex = null;
-        game.pendingCard = null;
-        game.pendingActorIndex = null;
-        game.pendingTargetType = null;
-        renderAll();
-        return;
-      }
-
-      // scegli l'attaccante (per ora sempre il primo vivo)
-      const actorIndex = game.player.champions.findIndex(ch => ch.hp > 0);
-      if (actorIndex === -1) return;
-
-      // se la carta richiede target singolo -> entra in modalità selezione bersaglio
-      if (card.target === 'enemy' || card.target === 'ally') {
-        game.selectedCardIndex = index;
-        game.pendingCard = card;
-        game.pendingActorIndex = actorIndex;
-        game.pendingTargetType = card.target;
-        game.selectingTarget = true;
-        log(game, `Seleziona il bersaglio per "${card.name}".`);
-        renderAll();
-        return;
-      }
-
-      // se non richiede target (self/all) la aggiungo subito alla queue
-      queueCardPlay('player', actorIndex, null, null, card, index);
-    }
-
-    function onChampionClick(side, index) {
-      if (!game.selectingTarget) return;
-      if (game.phase !== 'player') return;
-      const card = game.pendingCard;
-      if (!card) return;
-
-      const validTarget =
-        (game.pendingTargetType === 'enemy' && side === 'bot') ||
-        (game.pendingTargetType === 'ally' && side === 'player');
-
-      if (!validTarget) return;
-
-      const actorIndex = game.pendingActorIndex;
-      const handIndex = game.selectedCardIndex;
-      queueCardPlay('player', actorIndex, side, index, card, handIndex);
-    }
-
-    function queueCardPlay(ownerSide, actorIndex, targetSide, targetIndex, card, handIndex) {
-      const playerState = game[ownerSide];
-      if (card.cost > playerState.mana) return;
-      playerState.mana -= card.cost;
-
-      // togli carta dalla mano
-      if (ownerSide === 'player') {
-        playerState.hand.splice(handIndex, 1);
-      } else {
-        playerState.hand.splice(handIndex, 1);
-      }
-
-      game.queue.push({
-        ownerSide,
-        actorIndex,
-        cardId: card.id,
-        targetSide,
-        targetIndex
-      });
-
-      log(game, `${ownerSide === 'player' ? 'Tu' : 'Bot'} giochi "${card.name}".`);
-
-      // reset selezione
-      if (ownerSide === 'player') {
-        game.selectedCardIndex = null;
-        game.pendingCard = null;
-        game.pendingActorIndex = null;
-        game.pendingTargetType = null;
-        game.selectingTarget = false;
-      }
-
-      renderAll();
-    }
-
-    function resolveQueueAndEndTurn() {
-      // risolvi azioni in ordine
-      game.queue.forEach(action => {
-        const cardDef = CARD_LIBRARY[action.cardId];
-        if (!cardDef) return;
-        if (cardDef.target === 'all_enemies') {
-          cardDef.effect(game, action.ownerSide, action.actorIndex);
-        } else {
-          cardDef.effect(
-            game,
-            action.ownerSide,
-            action.actorIndex,
-            action.targetSide,
-            action.targetIndex
-          );
-        }
-      });
-      game.queue = [];
-      renderAll();
-
-      if (checkWin()) return;
-
-      if (game.phase === 'player') {
-        // passa al bot
-        startBotTurn();
-      } else {
-        // passa al player
-        startPlayerTurn();
-      }
-      renderAll();
-      if (checkWin()) return;
-    }
-
-    // --- BOT LOGIC ---
-    function botPlay() {
-      const side = 'bot';
-      const actorIndex = game.bot.champions.findIndex(ch => ch.hp > 0);
-      if (actorIndex === -1) return;
-      const p = game.bot;
-
-      // semplice IA: prova a giocare finché ha mana, max 3 carte
-      let plays = 0;
-      while (plays < 3) {
-        const playableIndices = p.hand
-          .map((c, i) => ({ c, i }))
-          .filter(({ c }) => c.cost <= p.mana);
-        if (playableIndices.length === 0) break;
-        const { c, i } = playableIndices[Math.floor(Math.random() * playableIndices.length)];
-
-        let targetSide = null;
-        let targetIndex = null;
-        if (c.target === 'enemy') {
-          targetSide = 'player';
-          const alive = game.player.champions
-            .map((ch, idx) => ({ ch, idx }))
-            .filter(({ ch }) => ch.hp > 0);
-          if (alive.length === 0) break;
-          targetIndex = alive[Math.floor(Math.random() * alive.length)].idx;
-        } else if (c.target === 'ally') {
-          targetSide = 'bot';
-          const alive = game.bot.champions
-            .map((ch, idx) => ({ ch, idx }))
-            .filter(({ ch }) => ch.hp > 0);
-          if (alive.length === 0) break;
-          targetIndex = alive[Math.floor(Math.random() * alive.length)].idx;
-        }
-
-        queueCardPlay(side, actorIndex, targetSide, targetIndex, c, i);
-        plays++;
-      }
-
-      // il bot risolve immediatamente e passa il turno
-      resolveQueueAndEndTurn();
-    }
-
-    // --- RENDER ---
-    function renderAll() {
-      renderChampions('player');
-      renderChampions('bot');
-      renderHand();
-      renderStatus();
-    }
-
-    function renderChampions(side) {
-      const containerId = side === 'player' ? 'playerChampions' : 'enemyChampions';
-      const container = document.getElementById(containerId);
-      container.innerHTML = '';
-      const champs = game[side].champions;
-      champs.forEach((ch, idx) => {
-        const div = document.createElement('div');
-        div.className = 'champion' + (ch.hp <= 0 ? ' dead' : '');
-        div.dataset.side = side;
-        div.dataset.index = idx;
-
-        // se sto selezionando un bersaglio
-        if (game.selectingTarget && game.phase === 'player') {
-          const expected = game.pendingTargetType;
-          if (expected === 'enemy' && side === 'bot' && ch.hp > 0) {
-            div.classList.add('selectable');
-          }
-          if (expected === 'ally' && side === 'player' && ch.hp > 0) {
-            div.classList.add('selectable');
-          }
-        }
-
-        div.addEventListener('click', () => {
-          onChampionClick(side, idx);
-        });
-
-        const currentAtk = ch.baseAtk + ch.atkBonus;
-        const currentDef = ch.baseDef + ch.defBonus;
-        const atkBonus = ch.atkBonus;
-        const defBonus = ch.defBonus;
-
-        div.innerHTML = `
-          <h3>${ch.name}</h3>
-          <div class="stat-line">
-            <span class="stat-label">LP:</span>
-            ${ch.hp} / ${ch.baseHp + ch.hpBonus}
-          </div>
-          <div class="stat-line">
-            <span class="stat-label">ATK:</span>
-            ${currentAtk}${atkBonus !== 0 ? ` (${atkBonus >= 0 ? '+' : ''}${atkBonus})` : ''}
-          </div>
-          <div class="stat-line">
-            <span class="stat-label">DEF:</span>
-            ${currentDef}${defBonus !== 0 ? ` (${defBonus >= 0 ? '+' : ''}${defBonus})` : ''}
-          </div>
-        `;
-        // placeholder per buff/debuff (testuale)
-        const buffsDiv = document.createElement('div');
-        buffsDiv.className = 'buffs';
-        ch.temporaryBuffs.forEach(b => {
-          if (b.type === 'atk') {
-            const span = document.createElement('span');
-            span.textContent = '+ATK';
-            buffsDiv.appendChild(span);
-          } else if (b.type === 'def') {
-            const span = document.createElement('span');
-            span.textContent = 'DEF↓';
-            buffsDiv.appendChild(span);
-          }
-        });
-        if (buffsDiv.childNodes.length > 0) div.appendChild(buffsDiv);
-
-        container.appendChild(div);
-      });
-    }
-
-    function renderHand() {
-      const handDiv = document.getElementById('playerHand');
-      handDiv.innerHTML = '';
-      game.player.hand.forEach((card, idx) => {
-        const div = document.createElement('div');
-        div.className = 'card';
-        if (card.cost > game.player.mana || game.phase !== 'player') {
-          div.classList.add('unplayable');
-        }
-        if (idx === game.selectedCardIndex) {
-          div.classList.add('selected');
-        }
-        div.addEventListener('click', () => onCardClick(idx));
-        div.innerHTML = `
-          <div class="card-title">${card.name}</div>
-          <div class="card-cost">${card.cost}</div>
-          <div>${card.description}</div>
-        `;
-        handDiv.appendChild(div);
-      });
-    }
-
-    function renderStatus() {
-      const manaInfo = document.getElementById('manaInfo');
-      const phaseInfo = document.getElementById('phaseInfo');
-      const resolveBtn = document.getElementById('resolveBtn');
-      if (game.phase === 'player') {
-        manaInfo.textContent = `Mana: ${game.player.mana}`;
-        phaseInfo.textContent = `Tocca a TE`;
-        resolveBtn.disabled = false;
-      } else {
-        manaInfo.textContent = `Mana: —`;
-        phaseInfo.textContent = `Tocca al BOT`;
-        resolveBtn.disabled = true;
-      }
-    }
-
-    // --- EVENT BINDINGS ---
-    document.getElementById('newGameBtn').addEventListener('click', () => {
-      initGame();
-    });
-
-    document.getElementById('resolveBtn').addEventListener('click', () => {
-      if (game.phase !== 'player') return;
-      resolveQueueAndEndTurn();
-    });
-
-    // auto-start
-    initGame();
+    // =========================
+    // AVVIO
+    // =========================
+    window.onload = () => {
+      startNewGame();
+    };
   </script>
 </body>
 </html>
