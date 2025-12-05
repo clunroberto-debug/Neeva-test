@@ -2,736 +2,625 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <title>Neeva – Prototype</title>
+  <title>Neeva Test – Turni e Carte</title>
   <style>
     body {
       font-family: system-ui, sans-serif;
-      background: #111827;
-      color: #e5e7eb;
+      background: #0b1020;
+      color: #f5f5f5;
       margin: 0;
       padding: 0;
     }
-    h1, h2, h3 {
-      margin: 0.4rem 0;
+    header {
+      padding: 10px 16px;
+      background: #151a30;
+      border-bottom: 1px solid #333;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 1rem;
+    h1 {
+      font-size: 18px;
+      margin: 0;
+    }
+    main {
+      padding: 12px 16px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
     .board {
       display: flex;
-      justify-content: space-between;
-      gap: 1rem;
-      margin-bottom: 1rem;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: flex-start;
     }
     .panel {
-      flex: 1;
-      padding: 0.75rem;
-      border-radius: 0.5rem;
-      background: #020617;
-      border: 1px solid #1f2937;
+      background: #151a30;
+      border-radius: 8px;
+      padding: 8px 10px;
+      border: 1px solid #222842;
+      flex: 1 1 0;
+      min-width: 260px;
     }
     .panel h2 {
-      font-size: 1.1rem;
-      margin-bottom: 0.5rem;
+      font-size: 14px;
+      margin: 0 0 6px;
     }
-    .hero {
-      border-radius: 0.5rem;
-      padding: 0.5rem;
-      margin-bottom: 0.5rem;
-      border: 1px solid #374151;
-      cursor: pointer;
+    .stats {
+      font-size: 12px;
+      line-height: 1.4;
+      white-space: pre-line;
     }
-    .hero.selected-target {
-      outline: 2px solid #fbbf24;
-    }
-    .hero h3 {
-      font-size: 1rem;
-    }
-    .stat-line {
-      font-size: 0.85rem;
-      line-height: 1.3;
-    }
-    .stat-bonus {
-      color: #22c55e;
-    }
-    .hp-bar {
-      width: 100%;
-      height: 10px;
-      background: #374151;
-      border-radius: 999px;
-      overflow: hidden;
-      margin: 0.25rem 0 0.4rem;
-    }
-    .hp-fill {
-      height: 100%;
-      background: #22c55e;
-    }
-
     .hand {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem;
+      gap: 8px;
+      margin-top: 6px;
     }
     .card {
-      flex: 0 0 180px;
-      border-radius: 0.5rem;
-      border: 1px solid #4b5563;
-      padding: 0.4rem 0.5rem;
-      background: #111827;
-      font-size: 0.8rem;
+      background: #222842;
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 11px;
       cursor: pointer;
-      position: relative;
-    }
-    .card.used {
-      opacity: 0.4;
-      cursor: not-allowed;
+      border: 1px solid #333b66;
+      max-width: 180px;
     }
     .card.selected {
-      outline: 2px solid #3b82f6;
+      border-color: #ffd447;
+      box-shadow: 0 0 8px rgba(255, 212, 71, 0.6);
     }
-    .card-title {
+    .card-header {
       font-weight: 600;
-      margin-bottom: 0.15rem;
+      margin-bottom: 2px;
     }
     .card-cost {
-      position: absolute;
-      top: 4px;
-      right: 6px;
-      font-size: 0.7rem;
-      padding: 0.1rem 0.3rem;
-      border-radius: 999px;
-      background: #0f172a;
-      border: 1px solid #1d4ed8;
+      font-size: 10px;
+      opacity: 0.8;
     }
-    .card-type {
-      font-size: 0.7rem;
-      opacity: 0.7;
-      margin-bottom: 0.15rem;
+    .card-body {
+      font-size: 10px;
+      opacity: 0.9;
+      margin-top: 2px;
     }
-    .card-desc {
-      font-size: 0.75rem;
-      line-height: 1.25;
-    }
-
     .controls {
-      margin-top: 0.75rem;
       display: flex;
+      gap: 8px;
       flex-wrap: wrap;
-      gap: 0.5rem;
+      margin-top: 6px;
       align-items: center;
     }
     button {
-      border-radius: 0.5rem;
+      background: #3944bc;
+      color: #f5f5f5;
       border: none;
-      padding: 0.4rem 0.7rem;
-      font-size: 0.8rem;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 12px;
       cursor: pointer;
-      background: #1d4ed8;
-      color: #e5e7eb;
     }
     button.secondary {
-      background: #374151;
+      background: #333a5c;
     }
     button.danger {
-      background: #b91c1c;
+      background: #b63b3b;
     }
     button:disabled {
-      opacity: 0.35;
-      cursor: not-allowed;
+      opacity: 0.5;
+      cursor: default;
     }
-    .mana {
-      font-size: 0.9rem;
+    select {
+      background: #151a30;
+      color: #f5f5f5;
+      border-radius: 4px;
+      border: 1px solid #333b66;
+      padding: 3px 4px;
+      font-size: 11px;
     }
-
     .log {
-      margin-top: 1rem;
-      padding: 0.5rem 0.6rem;
-      background: #020617;
-      border-radius: 0.5rem;
-      border: 1px solid #1f2937;
-      font-size: 0.8rem;
-      max-height: 200px;
+      font-size: 11px;
+      max-height: 220px;
       overflow-y: auto;
-      white-space: pre-wrap;
+      white-space: pre-line;
+    }
+    .mana-info {
+      font-size: 12px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Neeva – Prototype Turno a Carte</h1>
-    <p style="font-size:0.85rem;opacity:0.8;">
-      Turno: Pescata 3 → Mana pieno → scegli carte (il mana scala ma le carte non si attivano) → <b>Risolvi turno</b> → gioca il bot.
-    </p>
-
+  <header>
+    <h1>Neeva – Test Turni & Carte</h1>
+    <div style="font-size:12px;">Prototipo offline</div>
+  </header>
+  <main>
     <div class="board">
-      <div class="panel" id="player-panel">
-        <h2>Tu</h2>
-        <div class="hero" id="player-hero" onclick="onHeroClick('bot')">
-          <h3>Basil (Tu)</h3>
-          <div class="hp-bar"><div class="hp-fill" id="player-hp-fill"></div></div>
-          <div class="stat-line" id="player-stats"></div>
+      <div class="row">
+        <div class="panel">
+          <h2>Tu (Giocatore)</h2>
+          <div id="playerStats" class="stats"></div>
+        </div>
+        <div class="panel">
+          <h2>Bot</h2>
+          <div id="botStats" class="stats"></div>
         </div>
       </div>
-      <div class="panel" id="bot-panel">
-        <h2>Bot</h2>
-        <div class="hero" id="bot-hero" onclick="onHeroClick('player')">
-          <h3>Mordel (Bot)</h3>
-          <div class="hp-bar"><div class="hp-fill" id="bot-hp-fill"></div></div>
-          <div class="stat-line" id="bot-stats"></div>
+
+      <div class="row">
+        <div class="panel">
+          <h2>Le tue carte in mano</h2>
+          <div class="mana-info" id="manaInfo"></div>
+          <div class="controls">
+            <button id="startTurnBtn">Inizia / Nuovo turno</button>
+            <button id="resolveBtn">Risolvi turno</button>
+            <button id="resetTurnBtn" class="secondary">Reset turno</button>
+            <label style="font-size:11px;">Bersaglio:
+              <select id="targetSelect">
+                <option value="">-- scegli --</option>
+                <option value="bot-front">Bot Front</option>
+                <option value="bot-mid">Bot Mid</option>
+                <option value="bot-back">Bot Back</option>
+              </select>
+            </label>
+          </div>
+          <div id="playerHand" class="hand"></div>
+        </div>
+
+        <div class="panel">
+          <h2>Log</h2>
+          <div id="log" class="log"></div>
         </div>
       </div>
     </div>
-
-    <div class="panel">
-      <h2>La tua mano</h2>
-      <div class="mana" id="mana-display"></div>
-      <div class="hand" id="hand"></div>
-      <div class="controls">
-        <button onclick="resolveTurn()" id="resolve-btn">Risolvi turno</button>
-        <button class="secondary" onclick="resetTurn()" id="reset-btn">Reset turno</button>
-        <button class="secondary" onclick="startNewGame()">Nuova partita</button>
-        <span id="info" style="font-size:0.8rem;opacity:0.8;"></span>
-      </div>
-    </div>
-
-    <div class="log" id="log"></div>
-  </div>
+  </main>
 
   <script>
-    // =========================
-    // DEFINIZIONI DI BASE
-    // =========================
-    const MAX_MANA = 7;
-    const INITIAL_HAND = 7;
-    const DRAW_PER_TURN = 3;
+    // -------------------------
+    // Dati di base di esempio
+    // -------------------------
 
-    const cardDefinitions = {
-      // Solo pochi esempi per il prototipo
-      // type: 'attack' | 'buffSelf' | 'buffAllies' ...
-      // target: 'enemy' | 'ally' | 'self' | 'aoeEnemy'
-      "basil_basic_strike": {
-        id: "basil_basic_strike",
-        owner: "Basil",
-        name: "Colpo di Scisto",
-        cost: 1,
-        type: "attack",
-        target: "enemy",
-        aoe: false,
-        vc: 0.40,
-        desc: "Basil – Attacco singolo VC 40%.",
+    const basePlayerChars = [
+      {
+        id: 'basil',
+        name: 'Basil',
+        lp: 1000,
+        atk: 70,
+        def: 40,
+        critChance: 0.2,
+        critDmg: 1.5,
+        buffs: [],
+        debuffs: []
       },
-      "basil_shield": {
-        id: "basil_shield",
-        owner: "Basil",
-        name: "Muro di Scisti",
-        cost: 2,
-        type: "buffSelf",
-        target: "self",
-        aoe: false,
-        desc: "Basil – +5 DEF permanente e cura 20 HP.",
+      {
+        id: 'gael',
+        name: 'Gael',
+        lp: 900,
+        atk: 80,
+        def: 25,
+        critChance: 0.25,
+        critDmg: 1.5,
+        buffs: [],
+        debuffs: []
       },
-      "basil_aoe": {
-        id: "basil_aoe",
-        owner: "Basil",
-        name: "Fronte Minerale (AOE)",
-        cost: 3,
-        type: "attack",
-        target: "aoeEnemy",
-        aoe: true,
-        vc: 0.30,
-        desc: "Basil – Attacco AOE VC 30%. Non richiede bersaglio.",
-      },
-      "mordel_basic_strike": {
-        id: "mordel_basic_strike",
-        owner: "Mordel",
-        name: "Artiglio della Terra",
-        cost: 1,
-        type: "attack",
-        target: "enemy",
-        aoe: false,
-        vc: 0.40,
-        desc: "Mordel – Attacco singolo VC 40%.",
-      },
-      "mordel_debuff": {
-        id: "mordel_debuff",
-        owner: "Mordel",
-        name: "Sotterramento",
-        cost: 2,
-        type: "debuff",
-        target: "enemy",
-        aoe: false,
-        desc: "Mordel – -5 DEF permanente al bersaglio.",
-      },
-      "mordel_aoe": {
-        id: "mordel_aoe",
-        owner: "Mordel",
-        name: "Crepa Tellurica (AOE)",
-        cost: 3,
-        type: "attack",
-        target: "aoeEnemy",
-        aoe: true,
-        vc: 0.25,
-        desc: "Mordel – Attacco AOE VC 25%. Non richiede bersaglio.",
+      {
+        id: 'zagrok',
+        name: 'Zagrok',
+        lp: 950,
+        atk: 75,
+        def: 30,
+        critChance: 0.2,
+        critDmg: 1.5,
+        buffs: [],
+        debuffs: []
       }
-    };
+    ];
 
-    // =========================
-    // STATO DI GIOCO
-    // =========================
-    let game = null;
-    let turnBackup = null; // snapshot JSON per reset turno
-    let selectedCardIndex = null; // indice carta selezionata nella mano
-    let pendingPlays = []; // queue delle carte da risolvere
-    let selectingTargetFor = null; // { cardIndex, cardId }
+    const baseBotChars = [
+      {
+        id: 'bot-front',
+        name: 'Mordel (Bot Front)',
+        lp: 1000,
+        atk: 65,
+        def: 35,
+        critChance: 0.2,
+        critDmg: 1.5,
+        buffs: [],
+        debuffs: []
+      },
+      {
+        id: 'bot-mid',
+        name: 'Kiddou (Bot Mid)',
+        lp: 880,
+        atk: 78,
+        def: 22,
+        critChance: 0.3,
+        critDmg: 1.6,
+        buffs: [],
+        debuffs: []
+      },
+      {
+        id: 'bot-back',
+        name: 'Rindu (Bot Back)',
+        lp: 920,
+        atk: 82,
+        def: 20,
+        critChance: 0.28,
+        critDmg: 1.6,
+        buffs: [],
+        debuffs: []
+      }
+    ];
 
-    function createInitialGameState() {
-      return {
-        turnNumber: 1,
-        currentPlayer: "player", // "player" o "bot"
-        player: {
-          name: "Basil",
-          maxHp: 1000,
-          hp: 1000,
-          baseAtk: 80,
-          baseDef: 40,
-          atkBonus: 0,
-          defBonus: 0
-        },
-        bot: {
-          name: "Mordel",
-          maxHp: 1000,
-          hp: 1000,
-          baseAtk: 75,
-          baseDef: 35,
-          atkBonus: 0,
-          defBonus: 0
-        },
-        playerMana: MAX_MANA,
-        botMana: MAX_MANA,
-        playerDeck: [],
-        botDeck: [],
-        playerHand: [],
-        botHand: [],
-        playerGraveyard: [],
-        botGraveyard: []
-      };
+    // Carte di esempio (nome PERSONAGGIO + nome carta)
+    const allPlayerCards = [
+      {
+        id: 'basil-attack-1',
+        owner: 'Basil',
+        name: 'Basil – Colpo di Scisto',
+        cost: 1,
+        type: 'attack',
+        aoe: false,
+        vc: 0.4,
+        text: 'Attacco singolo 40% ATK di Basil.'
+      },
+      {
+        id: 'gael-attack-1',
+        owner: 'Gael',
+        name: 'Gael – Colpo di Guardia',
+        cost: 1,
+        type: 'attack',
+        aoe: false,
+        vc: 0.55,
+        text: 'Attacco singolo 55% ATK di Gael.'
+      },
+      {
+        id: 'zagrok-attack-1',
+        owner: 'Zagrok',
+        name: 'Zagrok – Morso Virale',
+        cost: 1,
+        type: 'attack',
+        aoe: false,
+        vc: 0.60,
+        text: 'Attacco singolo 60% ATK di Zagrok.'
+      },
+      {
+        id: 'basil-shield',
+        owner: 'Basil',
+        name: 'Basil – Muro di Scisti',
+        cost: 2,
+        type: 'buff',
+        aoe: false,
+        text: 'Dà scudo a un alleato pari al 15% LP di Basil.'
+      },
+      {
+        id: 'gael-taunt',
+        owner: 'Gael',
+        name: 'Gael – Sfida del Guardiano',
+        cost: 3,
+        type: 'buff',
+        aoe: true,
+        text: 'Per 1 turno i nemici che attaccano ricevono danni di ritorno.'
+      },
+      {
+        id: 'zagrok-heal',
+        owner: 'Zagrok',
+        name: 'Zagrok – Ringiovanimento',
+        cost: 3,
+        type: 'buff',
+        aoe: true,
+        text: 'Cura leggera AOE basata su LP max di Zagrok.'
+      }
+    ];
+
+    // Per semplicità: deck = copie multiple delle stesse carte
+    function buildPlayerDeck() {
+      const deck = [];
+      // 2 copie di ogni carta di esempio
+      for (let i = 0; i < 2; i++) {
+        allPlayerCards.forEach(c => deck.push({ ...c }));
+      }
+      return shuffle(deck);
     }
 
-    function buildDeck(owner) {
-      // Deck molto semplice per il prototipo
-      const ids = owner === "player"
-        ? [
-            "basil_basic_strike",
-            "basil_basic_strike",
-            "basil_basic_strike",
-            "basil_shield",
-            "basil_shield",
-            "basil_aoe",
-            "basil_aoe"
-          ]
-        : [
-            "mordel_basic_strike",
-            "mordel_basic_strike",
-            "mordel_basic_strike",
-            "mordel_debuff",
-            "mordel_debuff",
-            "mordel_aoe",
-            "mordel_aoe"
-          ];
-      // semplice shuffle
-      for (let i = ids.length - 1; i > 0; i--) {
+    // ------------- Stato globale -------------
+    let playerChars;
+    let botChars;
+    let playerDeck;
+    let playerHand;
+    let playerDiscard;
+    let currentMana;
+    let maxManaPerTurn = 7;
+    let turnNumber = 1;
+    let manaAtTurnStart = 7;
+    let selectedCardIds = [];
+
+    // ------------- Utility -------------
+    function shuffle(array) {
+      const a = [...array];
+      for (let i = a.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [ids[i], ids[j]] = [ids[j], ids[i]];
+        [a[i], a[j]] = [a[j], a[i]];
       }
-      return ids;
+      return a;
     }
 
-    function drawCards(owner, n) {
-      const deckKey = owner === "player" ? "playerDeck" : "botDeck";
-      const handKey = owner === "player" ? "playerHand" : "botHand";
-      for (let i = 0; i < n; i++) {
-        if (game[deckKey].length === 0) break;
-        if (game[handKey].length >= 11) break; // limite mano
-        const cardId = game[deckKey].shift();
-        game[handKey].push({ id: cardId, used: false });
-      }
-    }
-
-    function log(msg) {
-      const logEl = document.getElementById("log");
-      logEl.textContent += msg + "\n";
+    function log(text) {
+      const logEl = document.getElementById('log');
+      logEl.textContent += text + '\n';
       logEl.scrollTop = logEl.scrollHeight;
     }
 
-    function startNewGame() {
-      game = createInitialGameState();
-      game.playerDeck = buildDeck("player");
-      game.botDeck = buildDeck("bot");
-      pendingPlays = [];
-      selectedCardIndex = null;
-      selectingTargetFor = null;
-
-      // mano iniziale 7
-      drawCards("player", INITIAL_HAND);
-      drawCards("bot", INITIAL_HAND);
-
-      // snapshot inizio turno per reset
-      turnBackup = JSON.stringify(game);
-      render();
-      log("Nuova partita iniziata. Tocca a te (Turno 1).");
+    function getCharById(list, id) {
+      return list.find(c => c.id === id);
     }
 
-    // =========================
-    // RENDER UI
-    // =========================
-    function render() {
-      renderHeroes();
+    // ------------- Inizializzazione -------------
+    function initGame() {
+      playerChars = JSON.parse(JSON.stringify(basePlayerChars));
+      botChars = JSON.parse(JSON.stringify(baseBotChars));
+      playerDeck = buildPlayerDeck();
+      playerHand = [];
+      playerDiscard = [];
+      currentMana = maxManaPerTurn;
+      turnNumber = 1;
+      manaAtTurnStart = maxManaPerTurn;
+      selectedCardIds = [];
+      document.getElementById('log').textContent = '';
+
+      // Pesca iniziale 7 carte
+      drawCards(7);
+      renderAll();
+      log('Nuova partita iniziata. Pescate 7 carte iniziali.');
+    }
+
+    // ------------- Pesca -------------
+    function drawCards(n) {
+      for (let i = 0; i < n; i++) {
+        if (playerDeck.length === 0) break;
+        const card = playerDeck.shift();
+        playerHand.push(card);
+      }
+    }
+
+    // ------------- Turno giocatore -------------
+    function startPlayerTurn() {
+      turnNumber++;
+      selectedCardIds = [];
+      // Recupera mana pieno
+      currentMana = maxManaPerTurn;
+      manaAtTurnStart = currentMana;
+      // Pesca 3 carte
+      drawCards(3);
+      log(`\n--- INIZIO TUO TURNO ${turnNumber} ---`);
+      log('Pescate 3 carte. Mana ripristinato a ' + currentMana + '.');
+      renderAll();
+    }
+
+    function toggleCardSelection(cardId) {
+      const card = playerHand.find(c => c.id === cardId);
+      if (!card) return;
+      // Solo controllo sul mana: non superare il mana disponibile
+      const alreadySelected = selectedCardIds.includes(cardId);
+      if (alreadySelected) {
+        // desseleziono
+        selectedCardIds = selectedCardIds.filter(id => id !== cardId);
+      } else {
+        const totalCost = selectedCardIds
+          .map(id => playerHand.find(c => c.id === id)?.cost ?? 0)
+          .reduce((a, b) => a + b, 0);
+        if (totalCost + card.cost > manaAtTurnStart) {
+          log('Non puoi selezionare altre carte: supereresti il mana di inizio turno.');
+          return;
+        }
+        selectedCardIds.push(cardId);
+      }
       renderHand();
       renderMana();
-      updateInfo();
     }
 
-    function renderHeroes() {
-      const p = game.player;
-      const b = game.bot;
+    function resetTurnSelection() {
+      selectedCardIds = [];
+      currentMana = manaAtTurnStart;
+      document.getElementById('targetSelect').value = '';
+      log('Selezione del turno resettata.');
+      renderAll();
+    }
 
-      // player
-      let pAtkTotal = p.baseAtk + p.atkBonus;
-      let pDefTotal = p.baseDef + p.defBonus;
-      document.getElementById("player-stats").innerHTML =
-        `HP: ${p.hp}/${p.maxHp}<br>` +
-        `ATK: ${p.baseAtk} <span class="stat-bonus">(+${p.atkBonus})</span> = ${pAtkTotal}<br>` +
-        `DEF: ${p.baseDef} <span class="stat-bonus">(+${p.defBonus})</span> = ${pDefTotal}`;
+    function resolveTurn() {
+      if (selectedCardIds.length === 0) {
+        log('Nessuna carta selezionata da giocare.');
+        return;
+      }
 
-      const pFill = document.getElementById("player-hp-fill");
-      pFill.style.width = Math.max(0, (p.hp / p.maxHp) * 100) + "%";
+      // Controllo bersaglio per carte non AOE
+      const targetSelect = document.getElementById('targetSelect');
+      const targetId = targetSelect.value || null;
 
-      // bot
-      let bAtkTotal = b.baseAtk + b.atkBonus;
-      let bDefTotal = b.baseDef + b.defBonus;
-      document.getElementById("bot-stats").innerHTML =
-        `HP: ${b.hp}/${b.maxHp}<br>` +
-        `ATK: ${b.baseAtk} <span class="stat-bonus">(+${b.atkBonus})</span> = ${bAtkTotal}<br>` +
-        `DEF: ${b.baseDef} <span class="stat-bonus">(+${b.defBonus})</span> = ${bDefTotal}`;
+      // Controllo che tutte le carte non AOE abbiano un target
+      const nonAoeSelected = selectedCardIds
+        .map(id => playerHand.find(c => c.id === id))
+        .filter(c => c && !c.aoe);
 
-      const bFill = document.getElementById("bot-hp-fill");
-      bFill.style.width = Math.max(0, (b.hp / b.maxHp) * 100) + "%";
+      if (nonAoeSelected.length > 0 && !targetId) {
+        log('Devi selezionare un bersaglio per le carte non AOE.');
+        return;
+      }
 
-      // target highlight (se stiamo scegliendo un bersaglio)
-      document.getElementById("player-hero").classList.remove("selected-target");
-      document.getElementById("bot-hero").classList.remove("selected-target");
-      if (selectingTargetFor) {
-        const cardDef = cardDefinitions[selectingTargetFor.cardId];
-        if (cardDef.target === "enemy") {
-          // se il giocatore usa una carta, il nemico è il bot
-          if (game.currentPlayer === "player") {
-            document.getElementById("bot-hero").classList.add("selected-target");
-          } else {
-            document.getElementById("player-hero").classList.add("selected-target");
+      // Controllo mana totale
+      const totalCost = selectedCardIds
+        .map(id => playerHand.find(c => c.id === id)?.cost ?? 0)
+        .reduce((a, b) => a + b, 0);
+
+      if (totalCost > currentMana) {
+        log('Mana insufficiente per risolvere tutte le carte selezionate.');
+        return;
+      }
+
+      currentMana -= totalCost;
+
+      // Applico le carte nell’ordine in cui sono in selectedCardIds
+      for (const id of selectedCardIds) {
+        const cardIndex = playerHand.findIndex(c => c.id === id);
+        if (cardIndex === -1) continue;
+        const card = playerHand[cardIndex];
+        applyPlayerCard(card, targetId);
+        // Sposto la carta nel cimitero
+        playerDiscard.push(card);
+        playerHand.splice(cardIndex, 1);
+      }
+
+      selectedCardIds = [];
+      renderAll();
+
+      // Dopo la risoluzione del tuo turno, tocca al bot
+      botTurn();
+      // Poi nuovo turno tuo
+      startPlayerTurn();
+    }
+
+    // ------------- Effetti carte giocatore -------------
+    function applyPlayerCard(card, targetId) {
+      log(`Usi carta: ${card.name}`);
+      const ownerChar = playerChars.find(c => c.name === card.owner);
+      if (!ownerChar) {
+        log('  [ERRORE] Nessun personaggio trovato per ' + card.owner);
+        return;
+      }
+
+      if (card.type === 'attack') {
+        if (card.aoe) {
+          // Non usato in questo esempio, ma potrebbe essere AOE su tutti i bot
+          botChars.forEach(botChar => {
+            dealDamage(ownerChar, botChar, card.vc);
+          });
+        } else {
+          const target = getCharById(botChars, targetId);
+          if (!target) {
+            log('  Nessun bersaglio valido selezionato.');
+            return;
           }
-        } else if (cardDef.target === "ally" || cardDef.target === "self") {
-          if (game.currentPlayer === "player") {
-            document.getElementById("player-hero").classList.add("selected-target");
-          } else {
-            document.getElementById("bot-hero").classList.add("selected-target");
-          }
+          dealDamage(ownerChar, target, card.vc);
+        }
+      } else if (card.type === 'buff') {
+        // Effetti semplificati per il prototipo
+        if (card.id === 'basil-shield') {
+          // Scudo su un alleato a scelta? Per ora lo mettiamo su Zagrok
+          const ally = playerChars.find(c => c.id === 'zagrok') || playerChars[0];
+          const shieldValue = Math.round(basePlayerChars[0].lp * 0.15);
+          if (!ally.buffs) ally.buffs = [];
+          ally.buffs.push({ type: 'shield', value: shieldValue, turns: 2 });
+          log(`  ${ally.name} ottiene uno scudo di ${shieldValue} (2 turni).`);
+        } else if (card.id === 'gael-taunt') {
+          // Semplice logica: nessun effetto numerico, solo flavor
+          log('  Per 1 turno: chi attacca i tuoi alleati subisce danni di ritorno (non completamente implementato).');
+        } else if (card.id === 'zagrok-heal') {
+          // Cura semplice a tutti basata su LP max di Zagrok
+          const zagrokBase = basePlayerChars.find(c => c.id === 'zagrok');
+          const amount = Math.round(zagrokBase.lp * 0.12);
+          playerChars.forEach(ch => {
+            ch.lp = Math.min(ch.lp + amount, zagrokBase.lp + 200); // limite random
+          });
+          log(`  Tutti i tuoi alleati guariscono di circa ${amount} LP.`);
         }
       }
     }
 
+    function dealDamage(attacker, defender, vc) {
+      const raw = Math.round(attacker.atk * vc);
+      const dmg = Math.max(0, raw - defender.def);
+      defender.lp = Math.max(0, defender.lp - dmg);
+      log(`  ${attacker.name} infligge ${dmg} danni a ${defender.name} (${defender.lp} LP rimasti).`);
+    }
+
+    // ------------- Turno Bot (molto semplice) -------------
+    function botTurn() {
+      log('\n--- TURNO BOT ---');
+      // Bot: cerca un giocatore vivo, infligge danno base col personaggio mid
+      const botAttacker = botChars[1]; // Kiddou
+      if (!botAttacker || botAttacker.lp <= 0) {
+        log('  Il bot non può attaccare.');
+        return;
+      }
+      const target = playerChars.find(c => c.lp > 0);
+      if (!target) {
+        log('  Il bot non trova bersagli (hai vinto).');
+        return;
+      }
+      const vc = 0.5;
+      dealDamage(botAttacker, target, vc);
+      log('--- FINE TURNO BOT ---');
+    }
+
+    // ------------- Render -------------
+    function renderAll() {
+      renderStats();
+      renderHand();
+      renderMana();
+    }
+
+    function renderStats() {
+      const ps = document.getElementById('playerStats');
+      const bs = document.getElementById('botStats');
+
+      const fmtChar = (c) =>
+        `${c.name}
+LP: ${c.lp}
+ATK: ${c.atk}   DEF: ${c.def}`;
+
+      ps.textContent = playerChars.map(fmtChar).join('\n\n');
+      bs.textContent = botChars.map(fmtChar).join('\n\n');
+    }
+
     function renderHand() {
-      const handEl = document.getElementById("hand");
-      handEl.innerHTML = "";
-      if (game.currentPlayer !== "player") return;
+      const handEl = document.getElementById('playerHand');
+      handEl.innerHTML = '';
+      playerHand.forEach(card => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        if (selectedCardIds.includes(card.id)) div.classList.add('selected');
+        div.onclick = () => toggleCardSelection(card.id);
 
-      game.playerHand.forEach((c, index) => {
-        const def = cardDefinitions[c.id];
-        const cardDiv = document.createElement("div");
-        cardDiv.className = "card";
-        if (c.used) cardDiv.classList.add("used");
-        if (selectedCardIndex === index) cardDiv.classList.add("selected");
+        const header = document.createElement('div');
+        header.className = 'card-header';
+        header.textContent = card.name;
 
-        const fullName = `${def.owner} – ${def.name}`;
+        const cost = document.createElement('div');
+        cost.className = 'card-cost';
+        cost.textContent = `Costo: ${card.cost} mana`;
 
-        cardDiv.innerHTML = `
-          <div class="card-title">${fullName}</div>
-          <div class="card-cost">${def.cost}💧</div>
-          <div class="card-type">${def.aoe ? "AOE " : ""}${def.type}</div>
-          <div class="card-desc">${def.desc}</div>
-        `;
-        cardDiv.onclick = () => onCardClick(index);
-        handEl.appendChild(cardDiv);
+        const body = document.createElement('div');
+        body.className = 'card-body';
+        body.textContent = card.text;
+
+        div.appendChild(header);
+        div.appendChild(cost);
+        div.appendChild(body);
+        handEl.appendChild(div);
       });
     }
 
     function renderMana() {
-      const mana = game.playerMana;
-      document.getElementById("mana-display").textContent =
-        `Mana: ${mana}/${MAX_MANA} | Carte in mano: ${game.playerHand.length}`;
+      const manaEl = document.getElementById('manaInfo');
+      const totalSelectedCost = selectedCardIds
+        .map(id => playerHand.find(c => c.id === id)?.cost ?? 0)
+        .reduce((a, b) => a + b, 0);
+      manaEl.textContent =
+        `Mana turno: ${manaAtTurnStart}  |  Costo carte selezionate: ${totalSelectedCost}  |  Mana residuo dopo risoluzione: ${manaAtTurnStart - totalSelectedCost}`;
     }
 
-    function updateInfo(message) {
-      const infoEl = document.getElementById("info");
-      if (message) {
-        infoEl.textContent = message;
-      } else if (selectingTargetFor) {
-        infoEl.textContent = "Seleziona un bersaglio cliccando sul PG giusto.";
-      } else {
-        infoEl.textContent = "Seleziona carte (il mana scala), poi clicca su 'Risolvi turno'.";
-      }
-    }
+    // ------------- Event listeners -------------
+    document.getElementById('startTurnBtn').addEventListener('click', startPlayerTurn);
+    document.getElementById('resolveBtn').addEventListener('click', resolveTurn);
+    document.getElementById('resetTurnBtn').addEventListener('click', resetTurnSelection);
 
-    // =========================
-    // INTERAZIONE GIOCATORE
-    // =========================
-    function onCardClick(index) {
-      if (game.currentPlayer !== "player") return;
-      const card = game.playerHand[index];
-      if (card.used) return;
-
-      const def = cardDefinitions[card.id];
-      if (def.cost > game.playerMana) {
-        updateInfo("Mana insufficiente per questa carta.");
-        return;
-      }
-
-      // AOE: non richiede bersaglio → si aggiunge direttamente alla coda
-      if (def.aoe || def.target === "self") {
-        game.playerMana -= def.cost;
-        card.used = true;
-        pendingPlays.push({
-          owner: "player",
-          cardId: card.id,
-          target: null
-        });
-        render();
-        updateInfo(def.aoe ? "Carta AOE aggiunta alla coda." : "Carta aggiunta alla coda.");
-        return;
-      }
-
-      // Carta a bersaglio singolo → entra in modalità selezione bersaglio
-      selectedCardIndex = index;
-      selectingTargetFor = { cardIndex: index, cardId: card.id };
-      render();
-      updateInfo("Seleziona il bersaglio cliccando sul PG.");
-    }
-
-    function onHeroClick(sideClicked) {
-      // sideClicked: "player" o "bot" → chi è stato cliccato
-      if (!selectingTargetFor) return;
-      if (game.currentPlayer !== "player") return;
-
-      const card = game.playerHand[selectingTargetFor.cardIndex];
-      const def = cardDefinitions[card.id];
-
-      // Controllo coerenza bersaglio
-      if (def.target === "enemy" && sideClicked === "player") {
-        updateInfo("Questa carta richiede un NEMICO come bersaglio.");
-        return;
-      }
-      if ((def.target === "ally" || def.target === "self") && sideClicked === "bot") {
-        updateInfo("Questa carta richiede un ALLEATO come bersaglio.");
-        return;
-      }
-
-      // Scala mana, marca la carta, aggiunge alla coda
-      if (def.cost > game.playerMana) {
-        updateInfo("Mana insufficiente.");
-        return;
-      }
-
-      game.playerMana -= def.cost;
-      card.used = true;
-      pendingPlays.push({
-        owner: "player",
-        cardId: card.id,
-        target: sideClicked // "player" o "bot"
-      });
-
-      // Esce da modalità selezione
-      selectedCardIndex = null;
-      selectingTargetFor = null;
-      render();
-      updateInfo("Carta aggiunta alla coda. Puoi selezionare altre carte o 'Risolvi turno'.");
-    }
-
-    function resetTurn() {
-      if (!turnBackup) return;
-      game = JSON.parse(turnBackup);
-      pendingPlays = [];
-      selectedCardIndex = null;
-      selectingTargetFor = null;
-      render();
-      log("Turno resettato allo stato iniziale del turno.");
-    }
-
-    function resolveTurn() {
-      if (game.currentPlayer !== "player") return;
-      if (pendingPlays.length === 0) {
-        updateInfo("Non hai selezionato nessuna carta da risolvere.");
-        return;
-      }
-
-      log(`--- Risoluzione carte giocatore (Turno ${game.turnNumber}) ---`);
-      // Applica in ordine
-      for (const play of pendingPlays) {
-        resolveCard(play);
-      }
-      pendingPlays = [];
-      selectedCardIndex = null;
-      selectingTargetFor = null;
-
-      checkEndGame();
-      if (isGameOver()) return;
-
-      // Fine turno giocatore → tocca al bot
-      game.currentPlayer = "bot";
-      render();
-      setTimeout(botTurn, 600);
-    }
-
-    // =========================
-    // RISOLUZIONE CARTE
-    // =========================
-    function getUnit(side) {
-      return side === "player" ? game.player : game.bot;
-    }
-
-    function resolveCard(play) {
-      const def = cardDefinitions[play.cardId];
-      const ownerUnit = play.owner === "player" ? game.player : game.bot;
-      const enemyUnit = play.owner === "player" ? game.bot : game.player;
-
-      log(`${def.owner} usa ${def.name}.`);
-
-      switch (def.type) {
-        case "attack":
-          if (def.target === "aoeEnemy") {
-            // In questo prototipo è 1v1, quindi AOE = singolo
-            const dmg = computeDamage(ownerUnit, enemyUnit, def.vc || 0.3);
-            enemyUnit.hp = Math.max(0, enemyUnit.hp - dmg);
-            log(`Attacco AOE colpisce ${enemyUnit.name} per ${dmg} danni.`);
-          } else {
-            const targetUnit = play.target === "player"
-              ? (play.owner === "player" ? game.player : game.bot)
-              : (play.owner === "player" ? game.bot : game.player);
-            const dmg = computeDamage(ownerUnit, targetUnit, def.vc || 0.4);
-            targetUnit.hp = Math.max(0, targetUnit.hp - dmg);
-            log(`${ownerUnit.name} infligge ${dmg} danni a ${targetUnit.name}.`);
-          }
-          break;
-        case "buffSelf":
-          ownerUnit.defBonus += 5;
-          ownerUnit.hp = Math.min(ownerUnit.maxHp, ownerUnit.hp + 20);
-          log(`${ownerUnit.name} guadagna +5 DEF permanente e cura 20 HP.`);
-          break;
-        case "debuff":
-          // -5 DEF permanente al bersaglio
-          const target = play.owner === "player" ? game.bot : game.player;
-          target.defBonus -= 5;
-          log(`${target.name} perde 5 DEF permanenti.`);
-          break;
-        default:
-          log("Tipo carta non implementato nel prototipo.");
-      }
-
-      render();
-      checkEndGame();
-    }
-
-    function computeDamage(attacker, defender, vc) {
-      const atk = attacker.baseAtk + attacker.atkBonus;
-      const def = defender.baseDef + defender.defBonus;
-      const raw = Math.floor(atk * vc);
-      const dmg = Math.max(0, raw - def);
-      return dmg;
-    }
-
-    function checkEndGame() {
-      if (game.player.hp <= 0 && game.bot.hp <= 0) {
-        log("Pareggio: entrambi sconfitti.");
-      } else if (game.player.hp <= 0) {
-        log("Hai perso.");
-      } else if (game.bot.hp <= 0) {
-        log("Hai vinto!");
-      }
-    }
-
-    function isGameOver() {
-      return game.player.hp <= 0 || game.bot.hp <= 0;
-    }
-
-    // =========================
-    // TURNO DEL BOT
-    // =========================
-    function botTurn() {
-      if (isGameOver()) return;
-
-      // Inizio turno bot: mana full + pescata 3 + snapshot per reset interno (anche se non la usiamo)
-      game.botMana = MAX_MANA;
-      drawCards("bot", DRAW_PER_TURN);
-      render();
-      log(`--- Turno ${game.turnNumber} del BOT ---`);
-
-      // Semplice IA: gioca fino a 2 carte se ha mana
-      let plays = 0;
-      while (plays < 2) {
-        const playableIndices = game.botHand
-          .map((c, idx) => ({ c, idx }))
-          .filter(obj => !obj.c.used && cardDefinitions[obj.c.id].cost <= game.botMana);
-        if (playableIndices.length === 0) break;
-
-        const choice = playableIndices[Math.floor(Math.random() * playableIndices.length)];
-        const cardId = choice.c.id;
-        const def = cardDefinitions[cardId];
-
-        game.botMana -= def.cost;
-        choice.c.used = true;
-
-        const play = {
-          owner: "bot",
-          cardId: cardId,
-          target: null
-        };
-
-        if (!def.aoe && def.target === "enemy") {
-          play.target = "player";
-        } else if (!def.aoe && (def.target === "ally" || def.target === "self")) {
-          play.target = "bot";
-        }
-
-        resolveCard(play);
-        if (isGameOver()) break;
-        plays++;
-      }
-
-      if (!isGameOver()) {
-        // Fine turno bot → nuovo turno giocatore
-        game.turnNumber += 1;
-        startPlayerTurn();
-      }
-    }
-
-    function startPlayerTurn() {
-      game.currentPlayer = "player";
-      game.playerMana = MAX_MANA;
-      drawCards("player", DRAW_PER_TURN);
-      pendingPlays = [];
-      selectedCardIndex = null;
-      selectingTargetFor = null;
-      turnBackup = JSON.stringify(game); // snapshot per reset turno
-      render();
-      log(`--- Turno ${game.turnNumber} tuo ---`);
-    }
-
-    // =========================
-    // AVVIO
-    // =========================
-    window.onload = () => {
-      startNewGame();
-    };
+    // Avvio
+    initGame();
   </script>
 </body>
 </html>
