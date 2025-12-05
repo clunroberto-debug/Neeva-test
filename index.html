@@ -2,136 +2,181 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <title>Neeva - Prototype Turn System</title>
+  <title>Neeva Test Engine</title>
   <style>
     body {
-      font-family: sans-serif;
-      background: #111;
-      color: #eee;
+      font-family: system-ui, sans-serif;
+      background: #111827;
+      color: #e5e7eb;
       margin: 0;
       padding: 0;
     }
     header {
       padding: 10px 16px;
-      background: #222;
-      border-bottom: 1px solid #333;
+      background: #020617;
+      border-bottom: 1px solid #1f2937;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    h1 {
+    header h1 {
+      font-size: 18px;
       margin: 0;
-      font-size: 20px;
     }
-    #game {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    header small {
+      color: #9ca3af;
+    }
+    main {
       padding: 12px;
-    }
-    .row {
-      display: flex;
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
       gap: 12px;
-      flex-wrap: wrap;
     }
-    .panel {
-      border: 1px solid #444;
+    .column {
+      background: #020617;
       border-radius: 8px;
-      padding: 8px;
-      background: #181818;
-      flex: 1;
-      min-width: 270px;
+      padding: 10px;
+      border: 1px solid #1f2937;
     }
-    .panel h2 {
-      margin-top: 0;
-      font-size: 16px;
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      border-bottom: 1px solid #1f2937;
+      padding-bottom: 4px;
     }
-    .characters {
+    .team {
       display: flex;
       gap: 8px;
+      margin-bottom: 8px;
       flex-wrap: wrap;
     }
-    .char {
+    .char-card {
+      background: #111827;
       border-radius: 6px;
-      border: 1px solid #555;
       padding: 6px;
-      font-size: 12px;
+      border: 1px solid #374151;
+      width: 160px;
       cursor: pointer;
-      min-width: 120px;
     }
-    .char.player {
-      background: #202a3a;
+    .char-card.enemy {
+      border-color: #7f1d1d;
     }
-    .char.enemy {
-      background: #3a2020;
+    .char-card.selected-target {
+      box-shadow: 0 0 0 2px #e5e7eb;
     }
-    .char.selected-target {
-      outline: 2px solid #ffd54f;
+    .char-name {
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 2px;
     }
-    .char-dead {
-      opacity: 0.4;
+    .hp-bar {
+      height: 6px;
+      background: #1f2937;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 4px;
     }
-    .stats-line {
+    .hp-fill {
+      height: 100%;
+      background: #22c55e;
+    }
+    .stat-line {
       font-size: 11px;
-      margin-top: 2px;
+      color: #9ca3af;
+      line-height: 1.2;
     }
-    .hp-line {
-      font-weight: bold;
+    .bad {
+      color: #f97316;
     }
-    .buffs, .debuffs {
+    .buff-tags, .debuff-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .tag {
       font-size: 10px;
-      margin-top: 3px;
+      padding: 1px 4px;
+      border-radius: 999px;
+      border: 1px solid;
     }
-    .buffs span {
-      color: #81c784;
+    .tag.buff {
+      border-color: #22c55e;
+      color: #bbf7d0;
     }
-    .debuffs span {
-      color: #ef9a9a;
+    .tag.debuff {
+      border-color: #f97316;
+      color: #fed7aa;
     }
+
     .hand {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
     }
-    .card {
+    .card-btn {
+      background: #0f172a;
       border-radius: 6px;
-      border: 1px solid #555;
+      border: 1px solid #374151;
       padding: 6px;
-      background: #222;
-      font-size: 11px;
+      min-width: 150px;
       cursor: pointer;
-      width: 140px;
+      font-size: 11px;
+      text-align: left;
+      position: relative;
     }
-    .card.disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
+    .card-btn.player {
+      border-color: #4b5563;
     }
-    .card.selected {
-      outline: 2px solid #4fc3f7;
+    .card-btn.pending {
+      outline: 2px solid #22c55e;
     }
-    .card-title {
-      font-weight: bold;
-      margin-bottom: 3px;
+    .card-name {
+      font-weight: 600;
+      font-size: 12px;
+      margin-bottom: 2px;
     }
     .card-cost {
-      font-size: 10px;
-      opacity: 0.8;
+      position: absolute;
+      top: 3px;
+      right: 4px;
+      font-size: 11px;
+      background: #111827;
+      padding: 1px 4px;
+      border-radius: 999px;
+      border: 1px solid #4b5563;
     }
     .card-desc {
       font-size: 10px;
-      margin-top: 3px;
+      color: #9ca3af;
     }
+    .card-owner {
+      font-size: 10px;
+      color: #e5e7eb;
+      margin-bottom: 2px;
+    }
+
     .controls {
+      margin-top: 8px;
       display: flex;
-      gap: 8px;
+      gap: 6px;
       flex-wrap: wrap;
-      margin-top: 6px;
     }
     button {
-      cursor: pointer;
-      border-radius: 4px;
-      border: 1px solid #555;
-      background: #333;
-      color: #eee;
+      background: #1d4ed8;
+      border: none;
+      color: white;
       padding: 6px 10px;
       font-size: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: #374151;
+    }
+    button.danger {
+      background: #b91c1c;
     }
     button:disabled {
       opacity: 0.5;
@@ -139,763 +184,951 @@
     }
     .log {
       font-size: 11px;
-      max-height: 220px;
+      max-height: 280px;
       overflow-y: auto;
-      background: #101010;
-      padding: 6px;
+      background: #020617;
       border-radius: 6px;
-      border: 1px solid #333;
+      border: 1px solid #1f2937;
+      padding: 6px;
+      white-space: pre-line;
     }
-    .mana-info, .turn-info {
+    .log-line {
+      margin-bottom: 2px;
+    }
+    .log-turn {
+      color: #60a5fa;
+      font-weight: 600;
+    }
+    .mana-label {
       font-size: 12px;
       margin-bottom: 4px;
     }
-    .queue {
+    .mana-value {
+      font-weight: 700;
+    }
+    .pending-list {
       font-size: 11px;
-      background: #101010;
-      padding: 4px;
-      border-radius: 4px;
-      border: 1px solid #333;
       margin-top: 4px;
+      background: #020617;
+      border-radius: 6px;
+      border: 1px dashed #4b5563;
+      padding: 4px;
     }
   </style>
 </head>
 <body>
-<header>
-  <h1>Neeva – Prototype (turni, mana, bersagli, buff/debuff)</h1>
-</header>
-
-<div id="game">
-  <div class="row">
-    <div class="panel">
-      <h2>Avversario (Bot)</h2>
-      <div id="enemy-characters" class="characters"></div>
+  <header>
+    <div>
+      <h1>Neeva — Prototype Engine</h1>
+      <small>Turni, deck, buff/debuff con keyword, scarti & reshuffle</small>
     </div>
-    <div class="panel">
-      <h2>Giocatore (Tu)</h2>
-      <div id="player-characters" class="characters"></div>
+    <div style="font-size:12px;color:#9ca3af">
+      Giocatore: <strong>Player</strong> vs <strong>Bot</strong>
     </div>
-  </div>
+  </header>
 
-  <div class="row">
-    <div class="panel" style="flex: 2;">
-      <h2>Tua mano</h2>
-      <div class="turn-info" id="turnInfo"></div>
-      <div class="mana-info" id="manaInfo"></div>
-      <div class="hand" id="hand"></div>
-      <div class="controls">
-        <button id="endTurnBtn">Risolvi & Fine Turno</button>
-        <button id="resetTurnBtn">Reset turno</button>
+  <main>
+    <!-- COLONNA SINISTRA: Campo + Mano -->
+    <div class="column">
+      <div class="section-title">Campo di Battaglia</div>
+      <div class="mana-label">
+        Turno <span id="turnNumber">1</span> —
+        Mana: <span class="mana-value" id="playerMana">0</span> / 7
       </div>
-      <div class="queue" id="queueInfo"></div>
+
+      <div style="font-size:11px;color:#9ca3af;margin-bottom:4px">
+        Fase: <span id="phaseLabel">-</span>
+      </div>
+
+      <div>
+        <div style="font-size:12px;font-weight:600;margin-bottom:2px;">Il tuo team</div>
+        <div class="team" id="playerTeam"></div>
+      </div>
+
+      <div>
+        <div style="font-size:12px;font-weight:600;margin:6px 0 2px;">Team avversario</div>
+        <div class="team" id="botTeam"></div>
+      </div>
+
+      <div style="margin-top:10px;">
+        <div class="section-title">Le tue carte in mano</div>
+        <div class="hand" id="playerHand"></div>
+        <div class="pending-list">
+          <div style="font-weight:600;margin-bottom:2px;">Carte in coda per questo turno:</div>
+          <div id="pendingPlaysList" style="font-size:11px;color:#e5e7eb;">(nessuna)</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="btnResolve" disabled>Risolvi carte & fine turno</button>
+        <button id="btnResetTurn" class="secondary" disabled>Reset turno (annulla selezioni)</button>
+      </div>
     </div>
-    <div class="panel">
-      <h2>Log</h2>
-      <div class="log" id="log"></div>
+
+    <!-- COLONNA DESTRA: Log + Info Deck -->
+    <div class="column">
+      <div class="section-title">Log di gioco</div>
+      <div id="log" class="log"></div>
+
+      <div style="margin-top:10px;">
+        <div class="section-title">Deck & Scarti</div>
+        <div style="font-size:11px;color:#9ca3af;">
+          Carte nel deck: <span id="deckCount">0</span><br/>
+          Carte negli scarti: <span id="discardCount">0</span>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
+  </main>
 
-<script>
-/**
- * SEMPLICE PROTOTIPO
- * - 3 personaggi per lato
- * - Alcune carte (attacco singolo / AOE / cura / buff)
- * - Turno:
- *    - Se è il tuo turno: 7 carte iniziali, poi ogni inizio tuo turno peschi 3
- *    - Mana resettato a maxMana
- *    - Selezioni carte: ogni click scala il mana e aggiunge l'azione in coda
- *    - Se la carta richiede bersaglio → selezioni il bersaglio valido (alleato/nemico)
- *    - AOE: non richiedono bersaglio
- *    - "Reset turno": svuota la coda e restituisce il mana di inizio turno, ricarica la mano
- *    - "Risolvi & Fine Turno": esegue le azioni in coda, poi gioca il bot, poi passa al turno successivo
- */
+  <script>
+    /****************************************************
+     * MODELLO BASE
+     ****************************************************/
 
-const maxMana = 7;
-let turnNumber = 1;
-
-const playerChars = [
-  {
-    id: "basil",
-    name: "Basil",
-    side: "player",
-    lpMax: 980,
-    lp: 980,
-    atk: 63,
-    def: 40,
-    critChance: 0.6,
-    critDmg: 1.2,
-    critRes: 0.22,
-    critDef: 47,
-    buffs: [],
-    debuffs: []
-  },
-  {
-    id: "gael",
-    name: "Gael",
-    side: "player",
-    lpMax: 900,
-    lp: 900,
-    atk: 72,
-    def: 11,
-    critChance: 0.3,
-    critDmg: 1.5,
-    critRes: 0.10,
-    critDef: 25,
-    buffs: [],
-    debuffs: []
-  },
-  {
-    id: "zagrok",
-    name: "Zagrok",
-    side: "player",
-    lpMax: 830,
-    lp: 830,
-    atk: 68,
-    def: 13,
-    critChance: 0.3,
-    critDmg: 1.5,
-    critRes: 0.30,
-    critDef: 20,
-    buffs: [],
-    debuffs: [],
-    shield: 0
-  }
-];
-
-const enemyChars = [
-  {
-    id: "mordel",
-    name: "Mordel",
-    side: "enemy",
-    lpMax: 1020,
-    lp: 1020,
-    atk: 60,
-    def: 32,
-    critChance: 0.25,
-    critDmg: 1.5,
-    critRes: 0.25,
-    critDef: 33,
-    buffs: [],
-    debuffs: []
-  },
-  {
-    id: "kiddou",
-    name: "Kiddou",
-    side: "enemy",
-    lpMax: 820,
-    lp: 820,
-    atk: 58,
-    def: 23,
-    critChance: 0.4,
-    critDmg: 1.6,
-    critRes: 0.2,
-    critDef: 26,
-    buffs: [],
-    debuffs: []
-  },
-  {
-    id: "rindu",
-    name: "Rindu",
-    side: "enemy",
-    lpMax: 860,
-    lp: 860,
-    atk: 78,
-    def: 28,
-    critChance: 0.28,
-    critDmg: 1.5,
-    critRes: 0.2,
-    critDef: 22,
-    buffs: [],
-    debuffs: []
-  }
-];
-
-// Carte di esempio (nome include il personaggio che le usa)
-const allCards = [
-  {
-    id: "basil_basic",
-    owner: "basil",
-    name: "Basil - Colpo di Scisto",
-    cost: 1,
-    type: "attack",
-    targetType: "enemySingle",
-    vc: 0.4,
-    description: "Attacco singolo (40% ATK di Basil) su un nemico.",
-  },
-  {
-    id: "basil_wall",
-    owner: "basil",
-    name: "Basil - Muro di Scisti",
-    cost: 2,
-    type: "buff",
-    targetType: "allySingle",
-    description: "Un alleato ottiene uno scudo pari al 12% LPmax di Basil e +10 DEF per 1 turno."
-  },
-  {
-    id: "gael_basic",
-    owner: "gael",
-    name: "Gael - Colpo di Guardia",
-    cost: 1,
-    type: "attack",
-    targetType: "enemySingle",
-    vc: 0.55,
-    description: "Attacco singolo (55% ATK di Gael) su un nemico."
-  },
-  {
-    id: "gael_taunt",
-    owner: "gael",
-    name: "Gael - Sfida del Guardiano",
-    cost: 3,
-    type: "buff",
-    targetType: "self",
-    description: "Per 2 turni i nemici che colpiscono i tuoi alleati subiscono danno riflesso."
-  },
-  {
-    id: "zagrok_pandemic",
-    owner: "zagrok",
-    name: "Zagrok - Espansione Pandemica (AOE alleati)",
-    cost: 3,
-    type: "buff",
-    targetType: "allyAll",
-    description: "Tutti i tuoi alleati ottengono +8 ATK per 1 turno."
-  },
-  {
-    id: "zagrok_morso",
-    owner: "zagrok",
-    name: "Zagrok - Morso Virale",
-    cost: 1,
-    type: "attack",
-    targetType: "enemySingle",
-    vc: 0.6,
-    description: "Attacco singolo (60% ATK di Zagrok). Se infligge danno, +10 LP(P)."
-  },
-  {
-    id: "dionere_aoe",
-    owner: "dionere", // non esiste ancora in campo, è solo demo di AOE
-    name: "Dionere - Ira della Fenice (AOE nemici)",
-    cost: 4,
-    type: "attack",
-    targetType: "enemyAll",
-    vc: 0.5,
-    description: "AOE: attacca tutti i nemici (50% ATK). Non richiede bersaglio."
-  },
-  {
-    id: "basil_heal",
-    owner: "basil",
-    name: "Basil - Disgelo di Quarzo",
-    cost: 3,
-    type: "heal",
-    targetType: "allyAll",
-    description: "Tutti gli alleati curano il 20% degli LPmax di Basil."
-  }
-];
-
-// Deck molto semplice: 2 copie di ogni carta
-let playerDeck = [];
-let enemyDeck = [];
-function initDecks() {
-  playerDeck = [];
-  enemyDeck = [];
-  for (let i = 0; i < allCards.length; i++) {
-    // solo alcune carte per il player, altre per il bot
-    const card = allCards[i];
-    if (["basil_", "gael_", "zagrok_"].some(prefix => card.id.startsWith(prefix))) {
-      playerDeck.push(card.id, card.id); // 2 copie
-    } else {
-      enemyDeck.push(card.id, card.id);
-    }
-  }
-  shuffle(playerDeck);
-  shuffle(enemyDeck);
-}
-
-// Stato mano e mana
-let playerHand = [];
-let enemyHand = [];
-let playerMana = maxMana;
-let turnStartMana = maxMana;
-let actionQueue = []; // {cardId, sourceCharId, targetCharId|null}
-let selectedCardId = null;
-let selectingTargetFor = null; // {cardId, sourceCharId}
-
-const logElem = document.getElementById("log");
-const handElem = document.getElementById("hand");
-const playerCharsElem = document.getElementById("player-characters");
-const enemyCharsElem = document.getElementById("enemy-characters");
-const turnInfoElem = document.getElementById("turnInfo");
-const manaInfoElem = document.getElementById("manaInfo");
-const queueInfoElem = document.getElementById("queueInfo");
-const endTurnBtn = document.getElementById("endTurnBtn");
-const resetTurnBtn = document.getElementById("resetTurnBtn");
-
-/* Utility */
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-}
-
-function log(msg) {
-  logElem.innerHTML += msg + "<br>";
-  logElem.scrollTop = logElem.scrollHeight;
-}
-
-/* Game setup */
-function startGame() {
-  turnNumber = 1;
-  initDecks();
-  playerHand = [];
-  enemyHand = [];
-  // pesca iniziale 7 carte per il player e per il bot
-  drawCards(playerDeck, playerHand, 7);
-  drawCards(enemyDeck, enemyHand, 7);
-  startPlayerTurn();
-}
-
-function drawCards(deck, hand, n) {
-  for (let i = 0; i < n; i++) {
-    if (deck.length === 0) break;
-    hand.push(deck.shift());
-  }
-}
-
-/* Turn management */
-function startPlayerTurn() {
-  // pesca 3 carte
-  drawCards(playerDeck, playerHand, 3);
-
-  // mana pieno
-  playerMana = maxMana;
-  turnStartMana = maxMana;
-  actionQueue = [];
-  selectedCardId = null;
-  selectingTargetFor = null;
-
-  log(`<b>--- TUO TURNO ${turnNumber} ---</b>`);
-  updateUI();
-}
-
-function endPlayerTurnAndResolve() {
-  // risolvi la coda in ordine
-  log("<b>Risoluzione delle tue carte...</b>");
-  resolveActionQueue();
-  // check morti ecc
-  cleanupDead();
-  updateUI();
-
-  // turno bot
-  if (isGameOver()) return;
-  botTurn();
-
-  // fine round, prossimo turno
-  if (!isGameOver()) {
-    turnNumber += 1;
-    startPlayerTurn();
-  }
-}
-
-function isGameOver() {
-  const playerAlive = playerChars.some(c => c.lp > 0);
-  const enemyAlive = enemyChars.some(c => c.lp > 0);
-  if (!playerAlive || !enemyAlive) {
-    log("<b>Partita finita!</b>");
-    endTurnBtn.disabled = true;
-    resetTurnBtn.disabled = true;
-    return true;
-  }
-  return false;
-}
-
-function cleanupDead() {
-  // placeholder: qui potresti aggiungere log/effetti di morte
-}
-
-/* Risoluzione azioni */
-function resolveActionQueue() {
-  for (const action of actionQueue) {
-    const card = allCards.find(c => c.id === action.cardId);
-    if (!card) continue;
-    const source = getCharById(action.sourceCharId);
-    if (!source || source.lp <= 0) continue;
-
-    switch (card.type) {
-      case "attack":
-        applyAttackCard(card, source, action.targetCharId);
-        break;
-      case "buff":
-        applyBuffCard(card, source, action.targetCharId);
-        break;
-      case "heal":
-        applyHealCard(card, source, action.targetCharId);
-        break;
-      default:
-        break;
-    }
-  }
-  actionQueue = [];
-}
-
-/* Bot turn: molto semplice, gioca un attacco base se possibile */
-function botTurn() {
-  log(`<b>--- TURNO DEL BOT ${turnNumber} ---</b>`);
-  // pesca 3 carte
-  drawCards(enemyDeck, enemyHand, 3);
-  let botMana = maxMana;
-
-  // scegli una carta di attacco su un player vivo
-  const alivePlayers = playerChars.filter(c => c.lp > 0);
-  const aliveEnemies = enemyChars.filter(c => c.lp > 0);
-
-  if (alivePlayers.length === 0 || aliveEnemies.length === 0) return;
-
-  // pick a random enemy as source
-  const source = aliveEnemies[Math.floor(Math.random() * aliveEnemies.length)];
-  // cerca una carta di attacco (enemy deck)
-  const attackCardId = enemyHand.find(id => {
-    const c = allCards.find(x => x.id === id);
-    return c && c.type === "attack" && botMana >= c.cost;
-  });
-
-  if (!attackCardId) {
-    log("Il bot non gioca carte questo turno.");
-    return;
-  }
-
-  const card = allCards.find(c => c.id === attackCardId);
-  botMana -= card.cost;
-  // rimuovi dalla mano
-  enemyHand.splice(enemyHand.indexOf(attackCardId), 1);
-
-  let target = alivePlayers[Math.floor(Math.random() * alivePlayers.length)];
-  log(`Bot gioca ${card.name} da ${source.name} su ${target.name}.`);
-  if (card.type === "attack") {
-    applyAttackCard(card, source, target.id);
-  }
-  cleanupDead();
-  updateUI();
-}
-
-/* Effetti carte */
-function applyAttackCard(card, source, targetId) {
-  const enemies = source.side === "player" ? enemyChars : playerChars;
-  if (card.targetType === "enemyAll") {
-    log(`${card.name} (AOE) da ${source.name}!`);
-    enemies.forEach(target => {
-      if (target.lp <= 0) return;
-      const dmg = computeDamage(card.vc || 0.5, source, target);
-      applyDamage(target, dmg);
-      log(`  ${target.name} subisce ${dmg} danni (LP: ${target.lp}/${target.lpMax}).`);
-    });
-  } else {
-    const target = getCharById(targetId);
-    if (!target || target.lp <= 0) return;
-    const vc = card.vc || 0.4;
-    const dmg = computeDamage(vc, source, target);
-    applyDamage(target, dmg);
-    log(`${card.name} da ${source.name} su ${target.name}: ${dmg} danni (LP: ${target.lp}/${target.lpMax}).`);
-    // esempio di effetto extra su Morso Virale
-    if (card.id === "zagrok_morso" && dmg > 0) {
-      source.lpMax += 10;
-      source.lp += 10;
-      log(`Morso Virale: ${source.name} ottiene +10 LP (P). (LP: ${source.lp}/${source.lpMax})`);
-    }
-  }
-}
-
-function applyBuffCard(card, source, targetId) {
-  if (card.id === "basil_wall") {
-    const target = getCharById(targetId);
-    if (!target || target.lp <= 0) return;
-    const shield = Math.round(playerChars.find(c => c.id === "basil").lpMax * 0.12);
-    if (typeof target.shield !== "number") target.shield = 0;
-    target.shield += shield;
-    target.def += 10; // 1 turno: semplificato, non scade ancora in questo prototipo
-    log(`${card.name}: ${target.name} ottiene scudo ${shield} e +10 DEF (DEF: ${target.def}).`);
-    return;
-  }
-  if (card.id === "zagrok_pandemic") {
-    const allies = source.side === "player" ? playerChars : enemyChars;
-    allies.forEach(a => {
-      a.atk += 8;
-    });
-    log(`${card.name}: tutti gli alleati ottengono +8 ATK per il turno.`);
-    return;
-  }
-  if (card.id === "gael_taunt") {
-    // per ora solo log
-    log(`${card.name}: (placeholder) Gael prepara una sfida difensiva (non completamente implementata).`);
-    return;
-  }
-}
-
-function applyHealCard(card, source, targetId) {
-  if (card.id === "basil_heal") {
-    const allies = source.side === "player" ? playerChars : enemyChars;
-    const basil = playerChars.find(c => c.id === "basil");
-    if (!basil) return;
-    const amount = Math.round(basil.lpMax * 0.2);
-    allies.forEach(a => {
-      const before = a.lp;
-      a.lp = Math.min(a.lp + amount, a.lpMax);
-      log(`${card.name}: ${a.name} cura ${a.lp - before} (LP: ${a.lp}/${a.lpMax}).`);
-    });
-  }
-}
-
-function computeDamage(vc, source, target) {
-  // danno molto semplificato
-  const raw = Math.round(source.atk * vc);
-  let effective = raw - target.def;
-  if (effective < 0) effective = 0;
-
-  // scudi
-  if (typeof target.shield === "number" && target.shield > 0) {
-    const absorbed = Math.min(target.shield, effective);
-    target.shield -= absorbed;
-    effective -= absorbed;
-    log(`${target.name} assorbe ${absorbed} danni con lo scudo (scudo rimanente: ${target.shield}).`);
-  }
-
-  return effective;
-}
-
-function applyDamage(target, dmg) {
-  target.lp -= dmg;
-  if (target.lp < 0) target.lp = 0;
-}
-
-/* Selezione carte e bersagli */
-function onCardClick(cardId) {
-  const card = allCards.find(c => c.id === cardId);
-  if (!card) return;
-  if (playerMana < card.cost) {
-    alert("Mana insufficiente per giocare questa carta.");
-    return;
-  }
-
-  // reset eventuale selezione precedente
-  selectedCardId = cardId;
-  selectingTargetFor = null;
-
-  // se la carta richiede bersaglio singolo → entreremo in modalità selezione bersaglio
-  if (card.targetType === "enemySingle" || card.targetType === "allySingle") {
-    const ownerChar = getCharById(card.owner); // per ora owner = id char
-    if (!ownerChar) {
-      alert("Il personaggio proprietario di questa carta non è in campo.");
-      return;
-    }
-    selectingTargetFor = {
-      cardId: card.id,
-      sourceCharId: ownerChar.id
-    };
-    log(`Seleziona un bersaglio valido per: ${card.name}.`);
-  } else {
-    // nessun bersaglio da selezionare → aggiungi direttamente alla coda
-    const ownerChar = getCharById(card.owner);
-    if (!ownerChar) {
-      alert("Il personaggio proprietario di questa carta non è in campo.");
-      return;
-    }
-    queueAction(card, ownerChar, null);
-  }
-  updateUI();
-}
-
-function onCharacterClick(charId) {
-  // usato solo quando stiamo selezionando un bersaglio
-  if (!selectingTargetFor) return;
-  const card = allCards.find(c => c.id === selectingTargetFor.cardId);
-  if (!card) return;
-  const source = getCharById(selectingTargetFor.sourceCharId);
-  const target = getCharById(charId);
-  if (!source || !target) return;
-  if (target.lp <= 0) {
-    alert("Non puoi bersagliare un personaggio sconfitto.");
-    return;
-  }
-
-  // controlla se il bersaglio è valido (ally/enemy)
-  if (card.targetType === "allySingle" && source.side !== target.side) {
-    alert("Questa carta può essere usata solo su un tuo alleato.");
-    return;
-  }
-  if (card.targetType === "enemySingle" && source.side === target.side) {
-    alert("Questa carta può essere usata solo su un nemico.");
-    return;
-  }
-
-  queueAction(card, source, target.id);
-  // finita la selezione per questa carta
-  selectingTargetFor = null;
-  selectedCardId = null;
-  updateUI();
-}
-
-function queueAction(card, source, targetId) {
-  // scala mana
-  playerMana -= card.cost;
-  if (playerMana < 0) playerMana = 0;
-
-  // rimuovi la carta dalla mano (una singola copia)
-  const idx = playerHand.indexOf(card.id);
-  if (idx !== -1) playerHand.splice(idx, 1);
-
-  actionQueue.push({
-    cardId: card.id,
-    sourceCharId: source.id,
-    targetCharId: targetId
-  });
-
-  log(`Carta in coda: ${card.name} (costo ${card.cost}) da ${source.name}` +
-      (targetId ? ` su ${getCharById(targetId).name}` : "") + ".");
-}
-
-/* Reset turno: svuota coda, ripristina mano del turno, mana ecc.
-   In questo prototipo semplice: le carte in mano sono quelle rimaste,
-   quindi per "reset" consideriamo che le carte giocate tornano in mano
-   e il mana torna a max (più semplice). */
-function resetTurn() {
-  log("<b>Reset turno:</b> svuoto la coda e ripristino il mana.");
-  // rimetti in mano le carte in coda
-  actionQueue.forEach(a => {
-    playerHand.push(a.cardId);
-  });
-  actionQueue = [];
-  playerMana = turnStartMana;
-  selectedCardId = null;
-  selectingTargetFor = null;
-  updateUI();
-}
-
-/* UI Rendering */
-function updateUI() {
-  renderCharacters();
-  renderHand();
-  renderQueue();
-  turnInfoElem.textContent = `Turno: ${turnNumber}`;
-  manaInfoElem.textContent = `Mana: ${playerMana} / ${maxMana}`;
-}
-
-function renderCharacters() {
-  playerCharsElem.innerHTML = "";
-  enemyCharsElem.innerHTML = "";
-
-  const renderChar = (c, container) => {
-    const div = document.createElement("div");
-    div.className = "char " + (c.side === "player" ? "player" : "enemy");
-    if (c.lp <= 0) div.classList.add("char-dead");
-
-    div.onclick = () => onCharacterClick(c.id);
-
-    const hpLine = document.createElement("div");
-    hpLine.className = "hp-line";
-    hpLine.textContent = `${c.name} — LP: ${c.lp}/${c.lpMax}`;
-    div.appendChild(hpLine);
-
-    const statsLine = document.createElement("div");
-    statsLine.className = "stats-line";
-    statsLine.textContent =
-      `ATK ${c.atk} / DEF ${c.def}` +
-      ` / CritC ${(c.critChance * 100).toFixed(0)}% / CritD ${(c.critDmg * 100).toFixed(0)}%`;
-    div.appendChild(statsLine);
-
-    if (c.shield && c.shield > 0) {
-      const s = document.createElement("div");
-      s.className = "stats-line";
-      s.textContent = `Scudo: ${c.shield}`;
-      div.appendChild(s);
-    }
-
-    // buff/debuff testuali (semplici)
-    const buffsDiv = document.createElement("div");
-    buffsDiv.className = "buffs";
-    if (c.buffs.length > 0) {
-      buffsDiv.innerHTML = "Buff: " + c.buffs.map(b => `<span>${b}</span>`).join(", ");
-    }
-    const debuffsDiv = document.createElement("div");
-    debuffsDiv.className = "debuffs";
-    if (c.debuffs.length > 0) {
-      debuffsDiv.innerHTML = "Debuff: " + c.debuffs.map(d => `<span>${d}</span>`).join(", ");
-    }
-
-    if (c.buffs.length > 0) div.appendChild(buffsDiv);
-    if (c.debuffs.length > 0) div.appendChild(debuffsDiv);
-
-    container.appendChild(div);
-  };
-
-  playerChars.forEach(c => renderChar(c, playerCharsElem));
-  enemyChars.forEach(c => renderChar(c, enemyCharsElem));
-}
-
-function renderHand() {
-  handElem.innerHTML = "";
-  playerHand.forEach((cardId, index) => {
-    const card = allCards.find(c => c.id === cardId);
-    if (!card) return;
-    const div = document.createElement("div");
-    div.className = "card";
-    if (playerMana < card.cost) {
-      div.classList.add("disabled");
-    }
-    if (selectedCardId === card.id) {
-      div.classList.add("selected");
-    }
-    div.onclick = () => {
-      if (playerMana < card.cost) return;
-      onCardClick(card.id);
+    const VC_TYPES = {
+      SIMPLE: "simpleAttack",
+      AOE: "aoeAttack",
+      BUFF: "buff",
+      DEBUFF: "debuff",
+      UTILITY: "utility",
+      ULTI: "ultimate"
     };
 
-    const title = document.createElement("div");
-    title.className = "card-title";
-    title.textContent = card.name;
-    div.appendChild(title);
+    // Stato di gioco
+    const gameState = {
+      turn: 1,
+      phase: "idle",             // "draw", "play", "resolve", "enemy"
+      playerMana: 0,
+      playerManaMax: 7,
+      playerDeck: [],
+      playerDiscard: [],
+      playerHand: [],
+      pendingPlays: [],          // {card, sourceId, targets: [charId]}
+      playerTeam: [],
+      botTeam: [],
+      selectedCardId: null,
+      selectedTargets: [],
+      targetMode: null,          // "enemySingle", "allySingle", "allyAll", "enemyAll", null
+      mustSelectTarget: false,
+      targetSide: null,          // "player" | "bot"
+    };
 
-    const cost = document.createElement("div");
-    cost.className = "card-cost";
-    cost.textContent = `Costo: ${card.cost} mana`;
-    div.appendChild(cost);
+    /****************************************************
+     * DEFINIZIONE PERSONAGGI (SEMPLIFICATA)
+     * Per ora usiamo 3 vs 3: Basil, Gael, Zagrok vs Mordel, Kiddou, Rindu
+     ****************************************************/
 
-    const desc = document.createElement("div");
-    desc.className = "card-desc";
-    desc.textContent = card.description;
-    div.appendChild(desc);
+    function createCharacter(id, name, side, stats) {
+      return {
+        id,
+        name,
+        side, // "player" | "bot"
+        base: { ...stats },  // valori base
+        current: { ...stats }, // modificati
+        shield: 0,
+        buffs: [],   // { keyword, duration, data }
+        debuffs: [], // idem
+        alive: true
+      };
+    }
 
-    handElem.appendChild(div);
-  });
-}
+    function initTeams() {
+      // Stat semplificate per questa demo
+      gameState.playerTeam = [
+        createCharacter("basil", "Basil", "player", {
+          lp: 980, lpMax: 980, atk: 63, def: 40,
+          critChance: 60, critDmg: 120,
+          critResist: 22, critDef: 47
+        }),
+        createCharacter("gael", "Gael", "player", {
+          lp: 900, lpMax: 900, atk: 72, def: 11,
+          critChance: 30, critDmg: 150,
+          critResist: 10, critDef: 25
+        }),
+        createCharacter("zagrok", "Zagrok", "player", {
+          lp: 830, lpMax: 830, atk: 68, def: 13,
+          critChance: 30, critDmg: 150,
+          critResist: 30, critDef: 20
+        })
+      ];
 
-function renderQueue() {
-  if (actionQueue.length === 0) {
-    queueInfoElem.textContent = "Nessuna carta in coda.";
-    return;
-  }
-  const lines = actionQueue.map((a, i) => {
-    const card = allCards.find(c => c.id === a.cardId);
-    const source = getCharById(a.sourceCharId);
-    const target = getCharById(a.targetCharId);
-    return `${i + 1}) ${card ? card.name : a.cardId} da ${source ? source.name : "?"}` +
-           (target ? ` su ${target.name}` : "");
-  });
-  queueInfoElem.innerHTML = "<b>Coda risoluzione:</b><br>" + lines.join("<br>");
-}
+      gameState.botTeam = [
+        createCharacter("mordel", "Mordel", "bot", {
+          lp: 1020, lpMax: 1020, atk: 60, def: 32,
+          critChance: 25, critDmg: 150,
+          critResist: 25, critDef: 33
+        }),
+        createCharacter("kiddou", "Kiddou", "bot", {
+          lp: 820, lpMax: 820, atk: 58, def: 23,
+          critChance: 40, critDmg: 160,
+          critResist: 20, critDef: 26
+        }),
+        createCharacter("rindu", "Rindu", "bot", {
+          lp: 860, lpMax: 860, atk: 78, def: 28,
+          critChance: 28, critDmg: 150,
+          critResist: 20, critDef: 22
+        })
+      ];
+    }
 
-function getCharById(id) {
-  return playerChars.find(c => c.id === id) || enemyChars.find(c => c.id === id);
-}
+    /****************************************************
+     * DEFINIZIONE CARTE REALI (SEMPLIFICATE)
+     * Ogni carta ha owner (PG), costo, VC, tipo, effetto
+     ****************************************************/
 
-/* Event listeners */
-endTurnBtn.addEventListener("click", () => {
-  endPlayerTurnAndResolve();
-});
-resetTurnBtn.addEventListener("click", () => {
-  resetTurn();
-});
+    const allCards = [
+      // BASIL
+      {
+        id: "basil_base",
+        name: "Basil — Colpo di Scisto",
+        owner: "Basil",
+        cost: 1,
+        type: VC_TYPES.SIMPLE,
+        vc: 0.40,
+        target: "enemySingle",
+        desc: "Attacco base (VC 40%).",
+        effect: (source, targets) => {
+          const t = targets[0];
+          simpleAttack(source, t, 0.40);
+        }
+      },
+      {
+        id: "basil_muro",
+        name: "Basil — Muro di Scisti",
+        owner: "Basil",
+        cost: 2,
+        type: VC_TYPES.BUFF,
+        target: "allySingle",
+        desc: "Scudo 12% LPmax Basil +10 DEF per 1 turno.",
+        effect: (source, targets) => {
+          const t = targets[0];
+          const shieldAmount = Math.round(source.current.lpMax * 0.12);
+          t.shield += shieldAmount;
+          addBuff(t, {
+            keyword: "Muro di Scisti",
+            duration: 1,
+            data: { defBonus: 10 }
+          });
+          t.current.def += 10;
+          logLine(`${t.name} ottiene uno scudo di ${shieldAmount} e +10 DEF (1 turno).`);
+        }
+      },
+      {
+        id: "basil_disgelo",
+        name: "Basil — Disgelo di Quarzo",
+        owner: "Basil",
+        cost: 3,
+        type: VC_TYPES.UTILITY,
+        target: "allyAll",
+        desc: "Rimuove 1 debuff e cura 30% LPmax di Basil a tutti.",
+        effect: (source, targets) => {
+          const heal = Math.round(source.current.lpMax * 0.30);
+          const allies = getTeam(source.side);
+          allies.forEach(ch => {
+            if (!ch.alive) return;
+            if (ch.debuffs.length > 0) {
+              ch.debuffs.shift();
+              logLine(`Debuff rimosso da ${ch.name}.`);
+            }
+            const newLp = Math.min(ch.current.lp + heal, ch.current.lpMax);
+            logLine(`${ch.name} cura ${newLp - ch.current.lp} LP.`);
+            ch.current.lp = newLp;
+          });
+        }
+      },
+      {
+        id: "zagrok_ringiovanimento",
+        name: "Zagrok — Ringiovanimento",
+        owner: "Zagrok",
+        cost: 3,
+        type: VC_TYPES.BUFF,
+        target: "allyAll",
+        desc: "Ringiovanimento (2 turni): ogni turno +12% LPmax e cura equivalente.",
+        effect: (source, targets) => {
+          const allies = getTeam(source.side);
+          allies.forEach(ch => {
+            if (!ch.alive) return;
+            addBuff(ch, {
+              keyword: "Ringiovanimento",
+              duration: 2,
+              data: { percent: 0.12 }
+            });
+            logLine(`${ch.name} ottiene Ringiovanimento (2 turni).`);
+          });
+        }
+      },
+      {
+        id: "mordel_zoccolo_ferita",
+        name: "Mordel — Ferita AOE",
+        owner: "Mordel",
+        cost: 3,
+        type: VC_TYPES.AOE,
+        target: "enemyAll",
+        desc: "Danni AOE (VC 60%) + Ferita x1 (3 turni).",
+        effect: (source, targets) => {
+          const enemies = getOpposingTeam(source.side);
+          enemies.forEach(t => {
+            if (!t.alive) return;
+            simpleAttack(source, t, 0.60);
+            addDebuff(t, {
+              keyword: "Ferita",
+              duration: 3,
+              data: { stacks: 1 }
+            });
+            logLine(`${t.name} subisce Ferita x1 (3 turni).`);
+          });
+        }
+      },
+      {
+        id: "player_generic_attack",
+        name: "Gael — Colpo di Guardia",
+        owner: "Gael",
+        cost: 1,
+        type: VC_TYPES.SIMPLE,
+        target: "enemySingle",
+        vc: 0.55,
+        desc: "Attacco singolo (VC 55%).",
+        effect: (source, targets) => {
+          simpleAttack(source, targets[0], 0.55);
+        }
+      },
+      {
+        id: "zagrok_morso",
+        name: "Zagrok — Morso Virale",
+        owner: "Zagrok",
+        cost: 1,
+        type: VC_TYPES.SIMPLE,
+        target: "enemySingle",
+        vc: 0.60,
+        desc: "Attacco (VC 60%). Se infligge danno → +10 LP(P).",
+        effect: (source, targets) => {
+          const t = targets[0];
+          const dmg = simpleAttack(source, t, 0.60);
+          if (dmg > 0) {
+            source.current.lpMax += 10;
+            source.current.lp += 10;
+            logLine(`${source.name} guadagna +10 LP(P).`);
+          }
+        }
+      }
+      // TODO: qui possiamo aggiungere TUTTE le altre carte reali
+      // dei personaggi (Kiddou, Rindu, Dionere, ecc.)
+    ];
 
-/* Start */
-startGame();
-</script>
+    // Helper per ottenere tutte le carte del player (deck base)
+    function buildPlayerDeck() {
+      // esempio: 2 copie di ogni carta non-ulti
+      const baseIds = [
+        "basil_base",
+        "basil_muro",
+        "basil_disgelo",
+        "zagrok_ringiovanimento",
+        "mordel_zoccolo_ferita",
+        "player_generic_attack",
+        "zagrok_morso"
+      ];
+      const deck = [];
+      baseIds.forEach(id => {
+        const card = allCards.find(c => c.id === id);
+        if (!card) return;
+        // 2 copie per ora
+        deck.push({ ...card });
+        deck.push({ ...card });
+      });
+      return deck;
+    }
+
+    /****************************************************
+     * FUNZIONI UTILI: TEAM, TARGET, LOG
+     ****************************************************/
+
+    function getTeam(side) {
+      return side === "player" ? gameState.playerTeam : gameState.botTeam;
+    }
+
+    function getOpposingTeam(side) {
+      return side === "player" ? gameState.botTeam : gameState.playerTeam;
+    }
+
+    function findCharById(id) {
+      return (
+        gameState.playerTeam.find(c => c.id === id) ||
+        gameState.botTeam.find(c => c.id === id)
+      );
+    }
+
+    const logEl = document.getElementById("log");
+
+    function logLine(text, isTurnHeader = false) {
+      const div = document.createElement("div");
+      div.className = "log-line" + (isTurnHeader ? " log-turn" : "");
+      div.textContent = text;
+      logEl.appendChild(div);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    /****************************************************
+     * BUFF & DEBUFF (con keyword)
+     ****************************************************/
+
+    function addBuff(character, buff) {
+      character.buffs.push({ ...buff });
+    }
+
+    function addDebuff(character, debuff) {
+      character.debuffs.push({ ...debuff });
+    }
+
+    // Elaborazione all'inizio del turno (per Ringiovanimento, ecc.)
+    function processStartOfTurnEffects() {
+      [...gameState.playerTeam, ...gameState.botTeam].forEach(ch => {
+        if (!ch.alive) return;
+        // Ringiovanimento
+        const ringio = ch.buffs.find(b => b.keyword === "Ringiovanimento");
+        if (ringio) {
+          const percent = ringio.data.percent || 0.12;
+          const gain = Math.round(ch.current.lpMax * percent);
+          ch.current.lpMax += gain;
+          ch.current.lp += gain;
+          logLine(`${ch.name} (Ringiovanimento): +${gain} LPmax & curati ${gain} LP.`);
+        }
+      });
+    }
+
+    // Elaborazione fine turno (Ferita)
+    function processEndOfTurnEffects() {
+      [...gameState.playerTeam, ...gameState.botTeam].forEach(ch => {
+        if (!ch.alive) return;
+        const ferite = ch.debuffs.filter(d => d.keyword === "Ferita");
+        if (ferite.length > 0) {
+          let totalStacks = 0;
+          ferite.forEach(d => {
+            totalStacks += d.data.stacks || 1;
+          });
+          const percent = 0.07 * totalStacks;
+          const loss = Math.round(ch.current.lp * percent);
+          if (loss > 0) {
+            ch.current.lp = Math.max(0, ch.current.lp - loss);
+            logLine(`${ch.name} perde ${loss} LP per Ferita (${totalStacks} stack).`);
+          }
+          if (ch.current.lp <= 0) {
+            ch.alive = false;
+            logLine(`${ch.name} è caduto a causa di Ferita.`);
+          }
+        }
+      });
+    }
+
+    // Decrementa durata buff/debuff e rimuove quelli scaduti
+    function tickDurations() {
+      [...gameState.playerTeam, ...gameState.botTeam].forEach(ch => {
+        if (!ch.alive) return;
+
+        ch.buffs.forEach(b => { b.duration -= 1; });
+        ch.debuffs.forEach(d => { d.duration -= 1; });
+
+        // Rimuovi buff scaduti
+        ch.buffs = ch.buffs.filter(b => {
+          if (b.duration > 0) return true;
+          // se Muro di Scisti, togli il +10 DEF
+          if (b.keyword === "Muro di Scisti") {
+            ch.current.def -= b.data.defBonus || 0;
+            logLine(`Il buff Muro di Scisti su ${ch.name} è terminato.`);
+          }
+          if (b.keyword === "Ringiovanimento") {
+            logLine(`Il buff Ringiovanimento su ${ch.name} è terminato.`);
+          }
+          return false;
+        });
+
+        // Rimuovi debuff scaduti
+        ch.debuffs = ch.debuffs.filter(d => {
+          if (d.duration > 0) return true;
+          logLine(`Il debuff ${d.keyword} su ${ch.name} è terminato.`);
+          return false;
+        });
+
+        // Lo scudo dura 2 turni? In questa versione non lo facciamo scadere automaticamente,
+        // ma lo consumiamo solo con i danni. Se vuoi una durata, possiamo aggiungerla.
+      });
+    }
+
+    /****************************************************
+     * COMBATTIMENTO SEMPLIFICATO (senza crit per ora)
+     ****************************************************/
+
+    function simpleAttack(source, target, vc) {
+      if (!source.alive || !target.alive) return 0;
+      const raw = Math.round(source.current.atk * vc);
+      // prima scudo
+      let remaining = raw;
+      if (target.shield > 0) {
+        const absorbed = Math.min(target.shield, remaining);
+        target.shield -= absorbed;
+        remaining -= absorbed;
+        logLine(`${target.name} assorbe ${absorbed} danni con lo Scudo.`);
+      }
+      if (remaining <= 0) {
+        logLine(`${source.name} colpisce ${target.name}, ma non infligge danni ai LP.`);
+        return 0;
+      }
+      const def = target.current.def;
+      const dmg = Math.max(0, remaining - def);
+      if (dmg <= 0) {
+        logLine(`${source.name} colpisce ${target.name}, ma la DIFESA blocca il colpo.`);
+        return 0;
+      }
+      target.current.lp = Math.max(0, target.current.lp - dmg);
+      logLine(`${source.name} infligge ${dmg} danni a ${target.name}.`);
+      if (target.current.lp <= 0) {
+        target.alive = false;
+        logLine(`${target.name} è stato sconfitto!`);
+      }
+      return dmg;
+    }
+
+    /****************************************************
+     * DECK, PESCA, SCARTI, RESHUFFLE
+     ****************************************************/
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function drawCards(n) {
+      for (let i = 0; i < n; i++) {
+        if (gameState.playerDeck.length === 0) {
+          // reshuffle scarti (tranne eventuali Ulti, se le marcassimo)
+          if (gameState.playerDiscard.length > 0) {
+            gameState.playerDeck = gameState.playerDiscard.splice(0);
+            shuffle(gameState.playerDeck);
+            logLine("Il deck è finito, rimescolo gli scarti (tranne le Ulti).");
+          } else {
+            logLine("Il deck è vuoto e non ci sono scarti, non puoi pescare.");
+            break;
+          }
+        }
+        const card = gameState.playerDeck.shift();
+        gameState.playerHand.push(card);
+      }
+    }
+
+    /****************************************************
+     * TURNI & FASI
+     ****************************************************/
+
+    function startGame() {
+      initTeams();
+      gameState.playerDeck = buildPlayerDeck();
+      shuffle(gameState.playerDeck);
+      gameState.playerDiscard = [];
+      gameState.playerHand = [];
+      gameState.pendingPlays = [];
+      gameState.turn = 1;
+      gameState.playerManaMax = 7;
+      gameState.playerMana = 0;
+      gameState.phase = "draw";
+
+      logEl.innerHTML = "";
+      logLine("Inizio partita.");
+      // Mano iniziale: 7
+      drawCards(7);
+      startPlayerTurn();
+      render();
+    }
+
+    function startPlayerTurn() {
+      logLine("");
+      logLine(`— TURNO ${gameState.turn} — GIOCATORE`, true);
+      // Fase pescata
+      gameState.phase = "draw";
+      drawCards(3);
+      // mana pieno
+      gameState.playerMana = gameState.playerManaMax;
+      gameState.phase = "play";
+      gameState.pendingPlays = [];
+      updateUIPhase();
+      render();
+    }
+
+    function endPlayerTurnAndResolve() {
+      if (gameState.phase !== "play") return;
+      gameState.phase = "resolve";
+      updateUIPhase();
+
+      // Risolvi le carte in coda nell'ordine in cui sono state selezionate
+      if (gameState.pendingPlays.length === 0) {
+        logLine("Nessuna carta da risolvere, passi il turno.");
+      } else {
+        gameState.pendingPlays.forEach(play => {
+          const { card, sourceId, targetIds } = play;
+          const source = findCharById(sourceId);
+          const targets = targetIds.map(id => findCharById(id)).filter(t => t && t.alive);
+          if (!source || !source.alive) return;
+          logLine(`>> ${source.name} usa "${card.name}"`);
+          try {
+            card.effect(source, targets);
+          } catch (e) {
+            console.error(e);
+            logLine(`(Errore nell'effetto di ${card.name})`);
+          }
+        });
+      }
+
+      gameState.pendingPlays = [];
+      document.getElementById("pendingPlaysList").textContent = "(nessuna)";
+
+      // Effetti di fine turno giocatore
+      processEndOfTurnEffects();
+      tickDurations();
+      render();
+
+      // Dopo aver risolto → turno bot
+      setTimeout(startBotTurn, 400);
+    }
+
+    function startBotTurn() {
+      gameState.phase = "enemy";
+      updateUIPhase();
+      logLine("");
+      logLine(`— TURNO ${gameState.turn} — BOT`, true);
+
+      // Esempio semplice: bot attacca con un colpo base "a caso"
+      const aliveBot = gameState.botTeam.filter(c => c.alive);
+      const alivePlayer = gameState.playerTeam.filter(c => c.alive);
+      if (aliveBot.length === 0 || alivePlayer.length === 0) {
+        endGameCheck();
+        return;
+      }
+      const attacker = aliveBot[Math.floor(Math.random() * aliveBot.length)];
+      const target = alivePlayer[Math.floor(Math.random() * alivePlayer.length)];
+
+      logLine(`${attacker.name} attacca ${target.name} (bot base attack).`);
+      simpleAttack(attacker, target, 0.50);
+
+      // Fine turno bot: Ferita ecc.
+      processEndOfTurnEffects();
+      tickDurations();
+      render();
+
+      // Check fine partita
+      if (endGameCheck()) return;
+
+      // Incremento numero turno e passa di nuovo al giocatore
+      gameState.turn += 1;
+      startPlayerTurn();
+    }
+
+    function endGameCheck() {
+      const playerAlive = gameState.playerTeam.some(c => c.alive);
+      const botAlive = gameState.botTeam.some(c => c.alive);
+      if (!playerAlive || !botAlive) {
+        logLine("");
+        if (playerAlive && !botAlive) {
+          logLine("HAI VINTO!", true);
+        } else if (!playerAlive && botAlive) {
+          logLine("HAI PERSO!", true);
+        } else {
+          logLine("PAREGGIO (tutti i PG sconfitti).", true);
+        }
+        gameState.phase = "ended";
+        updateUIPhase();
+        return true;
+      }
+      return false;
+    }
+
+    /****************************************************
+     * HANDLING CARTE GIOCATE & SELEZIONE BERSAGLI
+     ****************************************************/
+
+    function onCardClick(cardId) {
+      if (gameState.phase !== "play") return;
+      const card = gameState.playerHand.find(c => c.id === cardId);
+      if (!card) return;
+      if (card.cost > gameState.playerMana) {
+        alert("Mana insufficiente per giocare questa carta.");
+        return;
+      }
+
+      // Si gioca la carta → entra in pending, si scala il mana, la carta esce dalla mano.
+      gameState.playerMana -= card.cost;
+
+      // Determinare chi è il PG che lancia la carta (owner)
+      const source = gameState.playerTeam.find(c => c.name === card.owner);
+      if (!source || !source.alive) {
+        alert("Il personaggio che dovrebbe usare questa carta non è disponibile.");
+        gameState.playerMana += card.cost;
+        return;
+      }
+
+      // Gestione target
+      const targetType = card.target;
+      gameState.selectedCardId = card.id;
+      gameState.selectedTargets = [];
+      gameState.targetMode = targetType;
+
+      if (targetType === "allyAll" || targetType === "enemyAll") {
+        // Non serve selezione: tutti i bersagli sono determinati in fase di risoluzione
+        // Qui però salviamo placeholder (saranno calcolati dopo).
+        gameState.pendingPlays.push({
+          card,
+          sourceId: source.id,
+          targetIds: []  // vuoto, verrà interpretato come "all ally" o "all enemy" dall'effetto
+        });
+        logLine(`Hai messo in coda "${card.name}" (bersaglio: ${targetType}).`);
+        // Rimuovi carta dalla mano → negli scarti
+        moveCardFromHandToDiscard(card.id);
+        updatePendingListUI();
+        render();
+      } else {
+        // Serve selezionare un bersaglio singolo
+        gameState.mustSelectTarget = true;
+        gameState.targetSide = (targetType === "allySingle" ? "player" : "bot");
+        logLine(`Seleziona il bersaglio per "${card.name}".`);
+      }
+
+      // Attiva pulsanti
+      document.getElementById("btnResolve").disabled = false;
+      document.getElementById("btnResetTurn").disabled = false;
+      render();
+    }
+
+    function moveCardFromHandToDiscard(cardId) {
+      const idx = gameState.playerHand.findIndex(c => c.id === cardId);
+      if (idx >= 0) {
+        const [card] = gameState.playerHand.splice(idx, 1);
+        // Le Ulti NON vanno nel discard; qui tutte sono normali
+        gameState.playerDiscard.push(card);
+      }
+    }
+
+    function onCharacterClick(charId, side) {
+      if (!gameState.mustSelectTarget) return;
+      if (gameState.targetSide !== side) {
+        alert("Questa carta può essere usata solo su un personaggio del lato corretto.");
+        return;
+      }
+      const card = allCards.find(c => c.id === gameState.selectedCardId);
+      if (!card) return;
+
+      const source = gameState.playerTeam.find(c => c.name === card.owner);
+      if (!source || !source.alive) {
+        alert("Sorgente non valida.");
+        return;
+      }
+
+      // Registriamo il target
+      gameState.pendingPlays.push({
+        card,
+        sourceId: source.id,
+        targetIds: [charId]
+      });
+      logLine(`Hai messo in coda "${card.name}" su ${findCharById(charId).name}.`);
+
+      // Rimuovi la carta dalla mano → negli scarti
+      moveCardFromHandToDiscard(card.id);
+
+      // Resetta stato di selezione
+      gameState.selectedCardId = null;
+      gameState.selectedTargets = [];
+      gameState.mustSelectTarget = false;
+      gameState.targetMode = null;
+      gameState.targetSide = null;
+
+      updatePendingListUI();
+      render();
+    }
+
+    function updatePendingListUI() {
+      const el = document.getElementById("pendingPlaysList");
+      if (gameState.pendingPlays.length === 0) {
+        el.textContent = "(nessuna)";
+        return;
+      }
+      el.textContent = gameState.pendingPlays
+        .map((p, idx) => {
+          const cardName = p.card.name;
+          let targetsText = "";
+          if (p.card.target === "allyAll") targetsText = "→ tutti alleati";
+          else if (p.card.target === "enemyAll") targetsText = "→ tutti nemici";
+          else if (p.targetIds && p.targetIds.length > 0) {
+            targetsText = "→ " + p.targetIds.map(id => findCharById(id).name).join(", ");
+          }
+          return `${idx + 1}) ${cardName} ${targetsText}`;
+        })
+        .join("\n");
+    }
+
+    function resetTurnSelection() {
+      if (gameState.phase !== "play") return;
+      // Rimettiamo tutte le carte pending nella mano e restituiamo il mana speso
+      let manaRefund = 0;
+      gameState.pendingPlays.forEach(p => {
+        manaRefund += p.card.cost;
+        gameState.playerHand.push(p.card);
+        // rimuoviamo anche dagli scarti (perché le abbiamo spostate lì quando messe in coda)
+        const idx = gameState.playerDiscard.findIndex(c => c.id === p.card.id);
+        if (idx >= 0) gameState.playerDiscard.splice(idx, 1);
+      });
+      gameState.playerMana += manaRefund;
+      gameState.pendingPlays = [];
+      gameState.selectedCardId = null;
+      gameState.selectedTargets = [];
+      gameState.mustSelectTarget = false;
+      gameState.targetMode = null;
+      gameState.targetSide = null;
+      document.getElementById("pendingPlaysList").textContent = "(nessuna)";
+      logLine("Selezione del turno resettata.");
+      document.getElementById("btnResolve").disabled = true;
+      document.getElementById("btnResetTurn").disabled = true;
+      render();
+    }
+
+    /****************************************************
+     * RENDER UI
+     ****************************************************/
+
+    function render() {
+      document.getElementById("turnNumber").textContent = gameState.turn;
+      document.getElementById("playerMana").textContent = gameState.playerMana;
+      document.getElementById("deckCount").textContent = gameState.playerDeck.length;
+      document.getElementById("discardCount").textContent = gameState.playerDiscard.length;
+
+      renderTeam("playerTeam", gameState.playerTeam);
+      renderTeam("botTeam", gameState.botTeam, true);
+      renderHand();
+    }
+
+    function renderTeam(containerId, team, isEnemy = false) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = "";
+      team.forEach(ch => {
+        const div = document.createElement("div");
+        div.className = "char-card" + (isEnemy ? " enemy" : "");
+        if (gameState.mustSelectTarget &&
+            ((gameState.targetSide === "player" && ch.side === "player") ||
+             (gameState.targetSide === "bot" && ch.side === "bot"))) {
+          div.classList.add("selectable");
+        }
+        const name = document.createElement("div");
+        name.className = "char-name";
+        name.textContent = ch.name + (ch.alive ? "" : " (KO)");
+        div.appendChild(name);
+
+        const hpBar = document.createElement("div");
+        hpBar.className = "hp-bar";
+        const hpFill = document.createElement("div");
+        hpFill.className = "hp-fill";
+        const ratio = ch.current.lp / ch.current.lpMax;
+        hpFill.style.width = (Math.max(0, Math.min(1, ratio)) * 100) + "%";
+        hpBar.appendChild(hpFill);
+        div.appendChild(hpBar);
+
+        const stat = document.createElement("div");
+        stat.className = "stat-line";
+        stat.innerHTML =
+          `LP: ${ch.current.lp}/${ch.current.lpMax}` +
+          ` — ATK: ${ch.current.atk} — DEF: ${ch.current.def}` +
+          `<br/>Scudo: ${ch.shield}`;
+        div.appendChild(stat);
+
+        if (ch.buffs.length > 0) {
+          const buffs = document.createElement("div");
+          buffs.className = "buff-tags";
+          ch.buffs.forEach(b => {
+            const t = document.createElement("span");
+            t.className = "tag buff";
+            t.textContent = `${b.keyword} (${b.duration})`;
+            buffs.appendChild(t);
+          });
+          div.appendChild(buffs);
+        }
+        if (ch.debuffs.length > 0) {
+          const debuffs = document.createElement("div");
+          debuffs.className = "debuff-tags";
+          ch.debuffs.forEach(d => {
+            const t = document.createElement("span");
+            t.className = "tag debuff";
+            t.textContent = `${d.keyword} (${d.duration})`;
+            debuffs.appendChild(t);
+          });
+          div.appendChild(debuffs);
+        }
+
+        div.addEventListener("click", () => onCharacterClick(ch.id, ch.side));
+        container.appendChild(div);
+      });
+    }
+
+    function renderHand() {
+      const handEl = document.getElementById("playerHand");
+      handEl.innerHTML = "";
+      gameState.playerHand.forEach(card => {
+        const btn = document.createElement("button");
+        btn.className = "card-btn player";
+        btn.addEventListener("click", () => onCardClick(card.id));
+
+        const name = document.createElement("div");
+        name.className = "card-name";
+        name.textContent = card.name;
+        btn.appendChild(name);
+
+        const owner = document.createElement("div");
+        owner.className = "card-owner";
+        owner.textContent = `PG: ${card.owner}`;
+        btn.appendChild(owner);
+
+        const cost = document.createElement("div");
+        cost.className = "card-cost";
+        cost.textContent = card.cost;
+        btn.appendChild(cost);
+
+        const desc = document.createElement("div");
+        desc.className = "card-desc";
+        desc.textContent = card.desc;
+        btn.appendChild(desc);
+
+        handEl.appendChild(btn);
+      });
+    }
+
+    function updateUIPhase() {
+      const phaseLabel = document.getElementById("phaseLabel");
+      let text = "";
+      switch (gameState.phase) {
+        case "draw": text = "Pescata"; break;
+        case "play": text = "Giocata carte"; break;
+        case "resolve": text = "Risoluzione carte"; break;
+        case "enemy": text = "Turno del Bot"; break;
+        case "ended": text = "Partita terminata"; break;
+        default: text = "-";
+      }
+      phaseLabel.textContent = text;
+    }
+
+    /****************************************************
+     * EVENT LISTENERS
+     ****************************************************/
+
+    document.getElementById("btnResolve").addEventListener("click", () => {
+      endPlayerTurnAndResolve();
+      document.getElementById("btnResolve").disabled = true;
+      document.getElementById("btnResetTurn").disabled = true;
+    });
+
+    document.getElementById("btnResetTurn").addEventListener("click", () => {
+      resetTurnSelection();
+    });
+
+    /****************************************************
+     * AVVIO
+     ****************************************************/
+
+    startGame();
+  </script>
 </body>
 </html>
