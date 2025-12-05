@@ -2,514 +2,501 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <title>Neeva – Prototype</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Neeva – Proto Turni</title>
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #050816;
-      color: #f5f5f5;
+      background: #0b1020;
+      color: #f0f4ff;
       margin: 0;
       padding: 0;
     }
-    .page {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 16px;
-    }
     h1, h2, h3 {
-      margin: 0 0 8px;
+      margin: 0.3rem 0;
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 16px;
-    }
-    .subtitle {
-      text-align: center;
-      font-size: 0.9rem;
-      color: #cbd5f5;
-      margin-bottom: 24px;
+    .wrapper {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 1rem;
     }
     .board {
       display: grid;
-      grid-template-columns: 1.2fr 1.2fr 1fr;
-      gap: 12px;
-      align-items: flex-start;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 1rem;
+      margin-top: 1rem;
     }
-    .panel {
-      background: linear-gradient(145deg,#0b1020,#12172b);
-      border-radius: 12px;
-      padding: 12px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.4);
-      border: 1px solid rgba(255,255,255,0.08);
+    .card, .panel {
+      background: #141a33;
+      border-radius: 8px;
+      padding: 0.75rem;
+      box-shadow: 0 0 0 1px #262e4f;
     }
-    .panel-header {
+    .row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .char {
+      flex: 1 1 0;
+      border-radius: 6px;
+      padding: 0.5rem;
+      background: #1a2140;
+    }
+    .char-title {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    .hp {
+      font-size: 0.9rem;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      padding: 0.1rem 0.4rem;
+      border-radius: 999px;
+      margin-right: 0.25rem;
+      margin-top: 0.2rem;
+      background: #28325c;
+    }
+    button {
+      background: #3b82f6;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      padding: 0.3rem 0.6rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    button[disabled] {
+      opacity: 0.4;
+      cursor: default;
+    }
+    .btn-secondary {
+      background: #4b5563;
+    }
+    .btn-danger {
+      background: #ef4444;
+    }
+    .hand {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .hand-card {
+      background: #111827;
+      border-radius: 6px;
+      padding: 0.35rem 0.5rem;
+      font-size: 0.8rem;
+      min-width: 140px;
+      border: 1px solid #374151;
+    }
+    .hand-card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
-    }
-    .badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      background: #1f2937;
-      color: #e5e7eb;
-    }
-    .champ-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .champ-card {
-      border-radius: 10px;
-      padding: 8px;
-      background: #111827;
-      border: 1px solid rgba(255,255,255,0.08);
-      position: relative;
-    }
-    .champ-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 4px;
-    }
-    .champ-name {
+      margin-bottom: 0.25rem;
       font-weight: 600;
-      font-size: 0.95rem;
-    }
-    .champ-hp {
-      font-size: 0.85rem;
-    }
-    .hp-bar-bg {
-      width: 100%;
-      height: 6px;
-      border-radius: 999px;
-      background: #374151;
-      overflow: hidden;
-      margin-bottom: 4px;
-    }
-    .hp-bar-fill {
-      height: 6px;
-      background: linear-gradient(90deg,#34d399,#22c55e);
-      width: 100%;
-      transition: width 0.2s ease-out;
-    }
-    .champ-stats {
-      font-size: 0.75rem;
-      color: #d1d5db;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .stat-pill {
-      background: rgba(15,23,42,0.8);
-      padding: 2px 6px;
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.3);
-    }
-    .btn-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 6px;
-    }
-    button {
-      border: none;
-      border-radius: 999px;
-      padding: 6px 10px;
-      font-size: 0.8rem;
-      cursor: pointer;
-      background: #2563eb;
-      color: #f9fafb;
-      transition: background 0.15s, transform 0.1s;
-    }
-    button:hover {
-      background: #1d4ed8;
-      transform: translateY(-1px);
-    }
-    button:disabled {
-      background: #4b5563;
-      cursor: default;
-      transform: none;
-    }
-    .btn-secondary {
-      background: #1f2937;
-    }
-    .btn-secondary:hover {
-      background: #111827;
     }
     .log {
       font-size: 0.8rem;
-      max-height: 420px;
+      max-height: 280px;
       overflow-y: auto;
-      padding-right: 4px;
+      white-space: pre-line;
     }
-    .log-entry {
-      margin-bottom: 4px;
-    }
-    .log-entry span.turn-tag {
-      font-size: 0.7rem;
-      padding: 1px 6px;
-      border-radius: 999px;
-      margin-right: 4px;
-    }
-    .turn-player {
-      background: rgba(34,197,94,0.16);
-      color: #bbf7d0;
-    }
-    .turn-enemy {
-      background: rgba(239,68,68,0.16);
-      color: #fecaca;
-    }
-    .turn-info {
-      background: rgba(59,130,246,0.16);
-      color: #bfdbfe;
-    }
-    .turn-bar {
-      text-align: center;
-      margin: 8px 0 12px;
-      font-size: 0.85rem;
-      color: #e5e7eb;
-    }
-    .pill {
+    .phase-badge {
       display: inline-block;
-      padding: 3px 8px;
+      font-size: 0.8rem;
+      padding: 0.1rem 0.5rem;
       border-radius: 999px;
-      font-size: 0.75rem;
-      border: 1px solid rgba(148,163,184,0.4);
-    }
-    .pill.player {
-      background: rgba(34,197,94,0.12);
-      color: #bbf7d0;
-    }
-    .pill.enemy {
-      background: rgba(248,113,113,0.12);
-      color: #fecaca;
-    }
-    .footer {
-      margin-top: 16px;
-      font-size: 0.72rem;
-      color: #9ca3af;
-      text-align: center;
+      background: #1f2937;
+      margin-left: 0.25rem;
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <h1>Neeva – Prototype</h1>
-    <div class="subtitle">
-      Prototipo ultra semplificato: 3v3, turni alternati, attacchi base.  
-      <br />Serve solo per testare il flusso di combattimento, non è il regolamento completo.
-    </div>
-
-    <div class="turn-bar">
-      Turno: <span id="turnNumber">1</span> ·
-      <span id="turnOwnerPill" class="pill player">Tocca a TE</span>
-    </div>
-
-    <div class="board">
-      <!-- PANNELLO GIOCATORE -->
-      <div class="panel">
-        <div class="panel-header">
-          <h2>La tua squadra</h2>
-          <span class="badge">Giocatore</span>
-        </div>
-        <div id="playerTeam" class="champ-list"></div>
-      </div>
-
-      <!-- PANNELLO NEMICO -->
-      <div class="panel">
-        <div class="panel-header">
-          <h2>Squadra nemica</h2>
-          <span class="badge">Bot</span>
-        </div>
-        <div id="enemyTeam" class="champ-list"></div>
-      </div>
-
-      <!-- PANNELLO LOG / CONTROLLI -->
-      <div class="panel">
-        <div class="panel-header">
-          <h3>Log combattimento</h3>
-          <button id="btnNewGame" class="btn-secondary">Nuova partita</button>
-        </div>
-        <div id="log" class="log"></div>
-      </div>
-    </div>
-
-    <div class="footer">
-      Questo è solo un prototipo di test. Le statistiche, i danni e le regole sono
-      semplificati. L’obiettivo è avere una base cliccabile per poi inserire le
-      vere regole di Neeva (mana, carte, crit, debuff, ecc.).
-    </div>
+<div class="wrapper">
+  <h1>Neeva – Prototipo Turni</h1>
+  <div>
+    Turno giocatore: <span id="turnNumber">1</span>
+    <span class="phase-badge" id="phaseLabel">Fase: START</span>
   </div>
 
-  <script>
-    // --- Modello semplificato di Champion per il prototipo ---
-    const BASE_CHAMPIONS = {
-      Basil:   { maxLP: 980,  ATK: 63, DEF: 40 },
-      Gael:    { maxLP: 900,  ATK: 72, DEF: 11 },
-      Zagrok:  { maxLP: 830,  ATK: 68, DEF: 13 },
-      Mordel:  { maxLP: 1020, ATK: 60, DEF: 32 },
-      Kiddou:  { maxLP: 820,  ATK: 58, DEF: 23 },
-      Rindu:   { maxLP: 860,  ATK: 78, DEF: 28 },
-    };
+  <div class="board">
+    <!-- SINISTRA: CAMPO E MANO -->
+    <div class="card">
+      <h2>Campo</h2>
 
-    let state = {
-      turn: 1,
-      currentPlayer: "player", // "player" o "enemy"
-      playerTeam: [],
-      enemyTeam: [],
-      gameOver: false,
-    };
+      <h3>Tu</h3>
+      <div class="row" id="playerTeam"></div>
 
-    function cloneChampion(name) {
-      const base = BASE_CHAMPIONS[name];
-      return {
-        name,
-        maxLP: base.maxLP,
-        lp: base.maxLP,
-        ATK: base.ATK,
-        DEF: base.DEF,
-      };
+      <h3>Nemico (bot)</h3>
+      <div class="row" id="enemyTeam"></div>
+
+      <hr />
+
+      <div class="row" style="justify-content: space-between;">
+        <div>
+          <strong>Mana:</strong>
+          <span id="manaDisplay"></span> / <span id="maxManaDisplay"></span>
+        </div>
+        <div>
+          <button id="resolveButton" class="btn-secondary" disabled>Risolvi turno</button>
+        </div>
+      </div>
+
+      <h3>Mano</h3>
+      <div class="hand" id="handContainer"></div>
+    </div>
+
+    <!-- DESTRA: CODA AZIONI + LOG -->
+    <div class="panel">
+      <h2>Azioni in coda</h2>
+      <div id="queueList" style="font-size:0.8rem; min-height:2rem; margin-bottom:0.5rem;"></div>
+      <hr />
+      <h2>Log</h2>
+      <div id="log" class="log"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/*
+  PROTOTIPO TURNO NEEVA
+
+  Fasi del turno giocatore:
+  1) START:
+     - pesca carte
+     - rigenera mana
+  2) MAIN:
+     - il giocatore gioca carte (si scala il mana, ma NON si risolvono subito)
+     - per ogni carta giocata → azione aggiunta in coda
+  3) RESOLVE:
+     - esegue in ordine tutte le azioni in coda
+     - poi scatta automaticamente il turno del bot
+     - poi si passa al prossimo turno giocatore (START)
+*/
+
+const state = {
+  turnNumber: 1,
+  phase: "START", // START, MAIN, RESOLVE
+  playerMana: 7,
+  playerMaxMana: 7,
+  hand: [],
+  deck: [],
+  discardPile: [],
+  queue: [],
+  playerTeam: [
+    { id: "basil", name: "Basil", hp: 1020, maxHp: 1020, atk: 63, def: 40 },
+    { id: "gael", name: "Gael", hp: 900, maxHp: 900, atk: 72, def: 11 },
+    { id: "zagrok", name: "Zagrok", hp: 830, maxHp: 830, atk: 68, def: 13 }
+  ],
+  enemyTeam: [
+    { id: "mordel", name: "Mordel", hp: 1020, maxHp: 1020, atk: 60, def: 32 },
+    { id: "kiddou", name: "Kiddou", hp: 820, maxHp: 820, atk: 58, def: 23 },
+    { id: "rindu", name: "Rindu", hp: 860, maxHp: 860, atk: 78, def: 28 }
+  ]
+};
+
+// Carte di esempio per il prototipo
+const CARD_LIBRARY = [
+  {
+    id: "attack_basic",
+    name: "Attacco Base",
+    owner: "any",       // chiunque può usarla nel prototipo
+    cost: 1,
+    type: "attack",
+    description: "Attacca un nemico con 40% ATK.",
+    vc: 0.40
+  },
+  {
+    id: "buff_def",
+    name: "Scudo Difensivo",
+    owner: "any",
+    cost: 2,
+    type: "buff_def",
+    description: "+20 DEF per questo turno.",
+  },
+  {
+    id: "heal",
+    name: "Cura Leggera",
+    owner: "any",
+    cost: 2,
+    type: "heal",
+    description: "Cura 15% degli LP massimi di un alleato."
+  }
+];
+
+// Utility UI
+function log(msg) {
+  const el = document.getElementById("log");
+  el.textContent = msg + "\n" + el.textContent;
+}
+
+function updatePhaseLabel() {
+  document.getElementById("phaseLabel").textContent = "Fase: " + state.phase;
+}
+
+function renderTeams() {
+  const playerContainer = document.getElementById("playerTeam");
+  const enemyContainer = document.getElementById("enemyTeam");
+  playerContainer.innerHTML = "";
+  enemyContainer.innerHTML = "";
+
+  state.playerTeam.forEach(ch => {
+    const d = document.createElement("div");
+    d.className = "char";
+    d.innerHTML = `
+      <div class="char-title">${ch.name}</div>
+      <div class="hp">LP: ${ch.hp} / ${ch.maxHp}</div>
+      <div class="hp">ATK: ${ch.atk} | DEF: ${ch.def}</div>
+    `;
+    playerContainer.appendChild(d);
+  });
+
+  state.enemyTeam.forEach(ch => {
+    const d = document.createElement("div");
+    d.className = "char";
+    d.innerHTML = `
+      <div class="char-title">${ch.name}</div>
+      <div class="hp">LP: ${ch.hp} / ${ch.maxHp}</div>
+      <div class="hp">ATK: ${ch.atk} | DEF: ${ch.def}</div>
+    `;
+    enemyContainer.appendChild(d);
+  });
+}
+
+function renderMana() {
+  document.getElementById("manaDisplay").textContent = state.playerMana;
+  document.getElementById("maxManaDisplay").textContent = state.playerMaxMana;
+}
+
+function renderHand() {
+  const handEl = document.getElementById("handContainer");
+  handEl.innerHTML = "";
+
+  state.hand.forEach((card, index) => {
+    const c = document.createElement("div");
+    c.className = "hand-card";
+    const canPlay = state.phase === "MAIN" && state.playerMana >= card.cost;
+
+    c.innerHTML = `
+      <div class="hand-card-header">
+        <span>${card.name}</span>
+        <span class="tag">Costo: ${card.cost}</span>
+      </div>
+      <div style="margin-bottom:0.25rem;">${card.description}</div>
+      <button ${canPlay ? "" : "disabled"}
+              data-index="${index}">
+        Gioca carta
+      </button>
+    `;
+
+    const btn = c.querySelector("button");
+    btn.addEventListener("click", () => playCardFromHand(index));
+    handEl.appendChild(c);
+  });
+}
+
+function renderQueue() {
+  const qEl = document.getElementById("queueList");
+  if (state.queue.length === 0) {
+    qEl.textContent = "(nessuna azione in coda)";
+    return;
+  }
+  qEl.innerHTML = "";
+  state.queue.forEach((action, i) => {
+    const line = document.createElement("div");
+    const targetName = action.target?.name || "—";
+    line.textContent = `${i + 1}. ${action.label} → ${targetName}`;
+    qEl.appendChild(line);
+  });
+}
+
+// Deck & pescata
+function initDeck() {
+  // prototipo: 10 carte random dalla library
+  state.deck = [];
+  for (let i = 0; i < 10; i++) {
+    const base = CARD_LIBRARY[Math.floor(Math.random() * CARD_LIBRARY.length)];
+    // copia shallow con id univoco
+    state.deck.push({ ...base, instanceId: "c" + i });
+  }
+  shuffle(state.deck);
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+function drawCards(n) {
+  for (let i = 0; i < n; i++) {
+    if (state.deck.length === 0) break;
+    const card = state.deck.shift();
+    state.hand.push(card);
+  }
+}
+
+function startPlayerTurn() {
+  state.phase = "START";
+  updatePhaseLabel();
+  state.turnNumber++;
+  document.getElementById("turnNumber").textContent = state.turnNumber;
+
+  // recupero mana full
+  state.playerMana = state.playerMaxMana;
+
+  // pescata
+  drawCards(3);
+
+  log(`--- Inizio turno giocatore ${state.turnNumber} ---`);
+  log(`Peschi 3 carte. Mana ripristinato a ${state.playerMana}.`);
+
+  // passiamo subito alla MAIN phase
+  state.phase = "MAIN";
+  updatePhaseLabel();
+
+  document.getElementById("resolveButton").disabled = false;
+
+  renderMana();
+  renderHand();
+  renderQueue();
+  renderTeams();
+}
+
+function playCardFromHand(index) {
+  if (state.phase !== "MAIN") return;
+  const card = state.hand[index];
+  if (!card) return;
+  if (state.playerMana < card.cost) {
+    log("Non hai abbastanza mana per questa carta.");
+    return;
+  }
+
+  // per semplicità nel prototipo:
+  // - gli attacchi colpiscono sempre Rindu (se vivo)
+  // - le cure/buff colpiscono sempre Basil
+  let target = null;
+  let label = card.name;
+  if (card.type === "attack") {
+    target = state.enemyTeam.find(c => c.id === "rindu" && c.hp > 0)
+          || state.enemyTeam.find(c => c.hp > 0);
+    label += " (ATTACCO)";
+  } else if (card.type === "heal" || card.type === "buff_def") {
+    target = state.playerTeam.find(c => c.id === "basil") || state.playerTeam[0];
+    label += " (SU " + target.name + ")";
+  }
+
+  // scala mana
+  state.playerMana -= card.cost;
+
+  // aggiungi azione in coda (non si risolve ORA)
+  state.queue.push({
+    card,
+    target,
+    label
+  });
+
+  // rimuovi carta dalla mano (giocata)
+  state.hand.splice(index, 1);
+
+  log(`Metti in coda: ${card.name}. Mana rimanente: ${state.playerMana}.`);
+
+  renderHand();
+  renderMana();
+  renderQueue();
+}
+
+// RISOLUZIONE DEL TURNO
+function resolvePlayerTurn() {
+  if (state.phase !== "MAIN") return;
+  state.phase = "RESOLVE";
+  updatePhaseLabel();
+  document.getElementById("resolveButton").disabled = true;
+
+  log(">>> Inizia fase di RISOLUZIONE delle tue carte...");
+
+  // esegui tutte le azioni in coda, in ordine
+  state.queue.forEach(action => {
+    const card = action.card;
+    const target = action.target;
+    if (!target || target.hp <= 0) return;
+
+    if (card.type === "attack") {
+      // prototipo: danno = ATK * vc - DEF
+      const attacker = state.playerTeam[0]; // Basil come placeholder
+      const base = Math.round(attacker.atk * card.vc);
+      const dmg = Math.max(0, base - target.def);
+      target.hp = Math.max(0, target.hp - dmg);
+      log(`La tua ${card.name} infligge ${dmg} danni a ${target.name}.`);
+    } else if (card.type === "heal") {
+      const healAmount = Math.round(target.maxHp * 0.15);
+      target.hp = Math.min(target.maxHp, target.hp + healAmount);
+      log(`${card.name} cura ${target.name} di ${healAmount} LP.`);
+    } else if (card.type === "buff_def") {
+      // PROTOTIPO: +20 DEF solo per questo turno
+      target.def += 20;
+      log(`${card.name} dà +20 DEF a ${target.name} (solo per questo turno prototipo).`);
     }
+  });
 
-    function initGame() {
-      state.turn = 1;
-      state.currentPlayer = "player";
-      state.gameOver = false;
-      state.playerTeam = [
-        cloneChampion("Basil"),
-        cloneChampion("Gael"),
-        cloneChampion("Zagrok"),
-      ];
-      state.enemyTeam = [
-        cloneChampion("Mordel"),
-        cloneChampion("Kiddou"),
-        cloneChampion("Rindu"),
-      ];
-      document.getElementById("log").innerHTML = "";
-      logInfo("Nuova partita iniziata! Basil, Gael e Zagrok contro Mordel, Kiddou e Rindu.");
-      render();
-    }
+  // svuota la coda
+  state.queue = [];
+  renderQueue();
+  renderTeams();
 
-    // --- Logging ---
-    function log(message, type = "info") {
-      const logDiv = document.getElementById("log");
-      const entry = document.createElement("div");
-      entry.className = "log-entry";
-      const tag = document.createElement("span");
-      tag.classList.add("turn-tag");
-      if (type === "player") tag.classList.add("turn-player");
-      else if (type === "enemy") tag.classList.add("turn-enemy");
-      else tag.classList.add("turn-info");
-      tag.textContent = type === "player" ? "TU" : type === "enemy" ? "BOT" : "INFO";
-      const text = document.createElement("span");
-      text.textContent = " " + message;
-      entry.appendChild(tag);
-      entry.appendChild(text);
-      logDiv.appendChild(entry);
-      logDiv.scrollTop = logDiv.scrollHeight;
-    }
-    function logPlayer(msg) { log(msg, "player"); }
-    function logEnemy(msg) { log(msg, "enemy"); }
-    function logInfo(msg) { log(msg, "info"); }
+  // dopo che hai risolto, parte automaticamente il turno del bot
+  enemyTurn();
+}
 
-    // --- Utilità ---
-    function isAlive(champ) {
-      return champ.lp > 0;
-    }
+// TURNO NEMICO (semplificato)
+function enemyTurn() {
+  log(">>> Inizia il turno del NEMICO...");
 
-    function getAlive(team) {
-      return team.filter(isAlive);
-    }
+  // Bot: sceglie il primo personaggio vivo e attacca il tuo Basil con un attacco base
+  const attacker = state.enemyTeam.find(c => c.hp > 0);
+  const target = state.playerTeam.find(c => c.id === "basil") || state.playerTeam[0];
 
-    function computeDamage(attacker, defender) {
-      const raw = attacker.ATK - defender.DEF;
-      return raw > 0 ? raw : 1; // minimo 1 per non avere scontri eterni nel prototipo
-    }
+  if (!attacker || !target || target.hp <= 0) {
+    log("Il nemico non può agire.");
+  } else {
+    const base = Math.round(attacker.atk * 0.4);
+    const dmg = Math.max(0, base - target.def);
+    target.hp = Math.max(0, target.hp - dmg);
+    log(`${attacker.name} attacca ${target.name} e infligge ${dmg} danni.`);
+  }
 
-    function attack(attacker, defender, side) {
-      if (!isAlive(attacker) || !isAlive(defender)) return;
-      const dmg = computeDamage(attacker, defender);
-      defender.lp -= dmg;
-      if (defender.lp < 0) defender.lp = 0;
-      const msg = `${attacker.name} colpisce ${defender.name} per ${dmg} danni (LP ${defender.lp}/${defender.maxLP}).`;
-      if (side === "player") logPlayer(msg);
-      else logEnemy(msg);
+  renderTeams();
 
-      if (defender.lp === 0) {
-        const deathMsg = `${defender.name} è stato sconfitto!`;
-        if (side === "player") logPlayer(deathMsg);
-        else logEnemy(deathMsg);
-      }
-    }
+  // FINE TURNO AUTOMATICA → inizia un nuovo turno giocatore
+  log("--- Fine turno nemico. Nuovo turno giocatore. ---");
+  state.queue = [];
+  renderQueue();
 
-    function checkGameOver() {
-      const playerAlive = getAlive(state.playerTeam).length;
-      const enemyAlive = getAlive(state.enemyTeam).length;
-      if (playerAlive === 0 && enemyAlive === 0) {
-        logInfo("Pareggio! Tutti i personaggi sono stati sconfitti.");
-        state.gameOver = true;
-      } else if (playerAlive === 0) {
-        logEnemy("Il bot vince la partita!");
-        state.gameOver = true;
-      } else if (enemyAlive === 0) {
-        logPlayer("Hai vinto la partita!");
-        state.gameOver = true;
-      }
-      return state.gameOver;
-    }
+  startPlayerTurn();
+}
 
-    // --- Turni ---
-    function endTurn() {
-      if (state.gameOver) return;
-      if (state.currentPlayer === "player") {
-        state.currentPlayer = "enemy";
-        render();
-        setTimeout(enemyTurn, 600); // piccolo delay per “sentire” il bot
-      } else {
-        state.currentPlayer = "player";
-        state.turn += 1;
-        render();
-      }
-    }
+// Inizializzazione
+function initGame() {
+  initDeck();
+  document.getElementById("turnNumber").textContent = state.turnNumber;
+  renderTeams();
+  renderMana();
+  renderHand();
+  renderQueue();
+  updatePhaseLabel();
 
-    function enemyTurn() {
-      if (state.gameOver) return;
+  // primo turno del giocatore
+  startPlayerTurn();
 
-      const enemyAlive = getAlive(state.enemyTeam);
-      const playerAlive = getAlive(state.playerTeam);
+  document.getElementById("resolveButton").addEventListener("click", resolvePlayerTurn);
+}
 
-      if (enemyAlive.length === 0 || playerAlive.length === 0) {
-        checkGameOver();
-        return;
-      }
-
-      const attacker = enemyAlive[Math.floor(Math.random() * enemyAlive.length)];
-      const defender = playerAlive[Math.floor(Math.random() * playerAlive.length)];
-
-      attack(attacker, defender, "enemy");
-      if (!checkGameOver()) {
-        endTurn();
-      }
-    }
-
-    // --- Azioni del giocatore ---
-    function playerAttack(attackerIndex, defenderIndex) {
-      if (state.gameOver) return;
-      if (state.currentPlayer !== "player") return;
-
-      const attacker = state.playerTeam[attackerIndex];
-      const defender = state.enemyTeam[defenderIndex];
-
-      if (!isAlive(attacker) || !isAlive(defender)) return;
-
-      attack(attacker, defender, "player");
-      if (!checkGameOver()) {
-        endTurn();
-      } else {
-        render();
-      }
-    }
-
-    // --- Rendering UI ---
-    function renderTeam(team, containerId, side) {
-      const container = document.getElementById(containerId);
-      container.innerHTML = "";
-
-      team.forEach((champ, idx) => {
-        const card = document.createElement("div");
-        card.className = "champ-card";
-
-        const header = document.createElement("div");
-        header.className = "champ-header";
-
-        const nameEl = document.createElement("div");
-        nameEl.className = "champ-name";
-        nameEl.textContent = champ.name;
-
-        const hpEl = document.createElement("div");
-        hpEl.className = "champ-hp";
-        hpEl.textContent = `LP ${champ.lp} / ${champ.maxLP}`;
-
-        header.appendChild(nameEl);
-        header.appendChild(hpEl);
-
-        const hpBarBg = document.createElement("div");
-        hpBarBg.className = "hp-bar-bg";
-        const hpBarFill = document.createElement("div");
-        hpBarFill.className = "hp-bar-fill";
-        const hpPerc = (champ.lp / champ.maxLP) * 100;
-        hpBarFill.style.width = hpPerc + "%";
-        hpBarBg.appendChild(hpBarFill);
-
-        const stats = document.createElement("div");
-        stats.className = "champ-stats";
-
-        const atk = document.createElement("span");
-        atk.className = "stat-pill";
-        atk.textContent = `ATK ${champ.ATK}`;
-
-        const def = document.createElement("span");
-        def.className = "stat-pill";
-        def.textContent = `DEF ${champ.DEF}`;
-
-        stats.appendChild(atk);
-        stats.appendChild(def);
-
-        card.appendChild(header);
-        card.appendChild(hpBarBg);
-        card.appendChild(stats);
-
-        // Pulsanti di attacco SOLO per i tuoi campioni
-        if (side === "player" && state.currentPlayer === "player" && !state.gameOver && champ.lp > 0) {
-          const btnRow = document.createElement("div");
-          btnRow.className = "btn-row";
-
-          getAlive(state.enemyTeam).forEach((enemyChamp) => {
-            const enemyIndex = state.enemyTeam.indexOf(enemyChamp);
-            const btn = document.createElement("button");
-            btn.textContent = `Attacca ${enemyChamp.name}`;
-            btn.onclick = () => playerAttack(idx, enemyIndex);
-            btnRow.appendChild(btn);
-          });
-
-          card.appendChild(btnRow);
-        }
-
-        if (champ.lp <= 0) {
-          card.style.opacity = 0.5;
-        }
-
-        container.appendChild(card);
-      });
-    }
-
-    function render() {
-      renderTeam(state.playerTeam, "playerTeam", "player");
-      renderTeam(state.enemyTeam, "enemyTeam", "enemy");
-
-      document.getElementById("turnNumber").textContent = state.turn;
-      const pill = document.getElementById("turnOwnerPill");
-      if (state.currentPlayer === "player") {
-        pill.textContent = "Tocca a TE";
-        pill.className = "pill player";
-      } else {
-        pill.textContent = "Tocca al BOT";
-        pill.className = "pill enemy";
-      }
-
-      if (state.gameOver) {
-        pill.textContent = "Partita finita";
-      }
-    }
-
-    document.getElementById("btnNewGame").addEventListener("click", initGame);
-
-    // Avvio
-    initGame();
-  </script>
+initGame();
+</script>
 </body>
 </html>
