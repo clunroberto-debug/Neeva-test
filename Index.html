@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Neeva – Compendio</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0b0c10;
+      color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1f2833, #202833);
+      padding: 16px 24px;
+      border-bottom: 1px solid #45a29e44;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0.04em;
+    }
+
+    header small {
+      color: #c5c6c7;
+    }
+
+    main {
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+
+    /* Pannello sinistro: lista PG / sezioni */
+    #sidebar {
+      width: 260px;
+      min-width: 240px;
+      max-width: 320px;
+      border-right: 1px solid #45a29e33;
+      padding-right: 8px;
+    }
+
+    #content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .section-title {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #66fcf1;
+      margin: 16px 0 8px;
+    }
+
+    .nav-item {
+      padding: 8px 10px;
+      margin-bottom: 4px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #1f2833;
+      border: 1px solid transparent;
+    }
+
+    .nav-item span {
+      pointer-events: none;
+    }
+
+    .nav-item:hover {
+      background: #202a38;
+      border-color: #45a29e66;
+    }
+
+    .nav-item.active {
+      background: #162029;
+      border-color: #66fcf1;
+      box-shadow: 0 0 0 1px #66fcf122;
+    }
+
+    .tag {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #45a29e22;
+      color: #66fcf1;
+      border: 1px solid #45a29e66;
+    }
+
+    /* Contenuto principale */
+    .card {
+      background: #1f2833;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+      border: 1px solid #45a29e33;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    .card h2, .card h3, .card h4 {
+      margin-top: 0;
+    }
+
+    .subtitle {
+      color: #c5c6c7;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 6px 14px;
+      font-size: 13px;
+      margin: 8px 0 12px;
+    }
+
+    .stat-label {
+      color: #c5c6c7;
+    }
+
+    .stat-value {
+      font-weight: 600;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 6px 0 12px;
+    }
+
+    .pill {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #0b0c10;
+      border: 1px solid #45a29e66;
+      color: #c5c6c7;
+    }
+
+    .keyword {
+      font-weight: 600;
+      color: #66fcf1;
+    }
+
+    .code-like {
+      font-family: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+      font-size: 12px;
+      background: #0b0c10;
+      padding: 4px 6px;
+      border-radius: 4px;
+      border: 1px solid #45a29e44;
+    }
+
+    .card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .ability-card {
+      border-radius: 8px;
+      padding: 10px 12px;
+      border: 1px solid #45a29e33;
+      background: #141922;
+    }
+
+    .ability-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+
+    .ability-name {
+      font-weight: 600;
+    }
+
+    .ability-meta {
+      font-size: 11px;
+      color: #c5c6c7;
+    }
+
+    .ability-body {
+      font-size: 13px;
+      color: #e5e5e5;
+    }
+
+    .small {
+      font-size: 11px;
+      color: #c5c6c7;
+    }
+
+    @media (max-width: 900px) {
+      main {
+        flex-direction: column;
+      }
+      #sidebar {
+        width: 100%;
+        max-width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #45a29e33;
+        padding-bottom: 12px;
+        margin-bottom: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Neeva <small>– Compendio regole & personaggi</small></h1>
+</header>
+
+<main>
+  <aside id="sidebar">
+    <div class="section-title">Sezioni</div>
+    <div class="nav-item active" data-section="rules">
+      <span>Regole di base</span>
+      <span class="tag">Core</span>
+    </div>
+    <div class="nav-item" data-section="keywords">
+      <span>Keyword & Debuff</span>
+      <span class="tag">Status</span>
+    </div>
+
+    <div class="section-title">Personaggi</div>
+    <div id="charNav"></div>
+  </aside>
+
+  <section id="content">
+    <!-- Qui viene iniettato il contenuto -->
+  </section>
+</main>
+
+<script>
+/* ===============================
+   DATI DI GIOCO – NEEVA
+   =============================== */
+
+const rulesSummary = {
+  draw: {
+    initialHand: 7,
+    drawPerTurn: 3,
+    maxHand: 11,
+    discardOverflowGivesMana: true
+  },
+  mana: {
+    basePerTurn: 7,
+    notes: [
+      "Il mana torna full a inizio di ogni tuo turno.",
+      "Ogni carta scartata per overflow mano fornisce +1 mana extra per il turno."
+    ]
+  },
+  turnStructure: [
+    "Inizio turno: attivazione passive che si triggerano \"ogni 2 turni\" del proprietario.",
+    "Pescata di 3 carte (con controllo overflow mano).",
+    "Rigenerazione mana al valore base ( + eventuale bonus da scarti).",
+    "Giocata carte (attacchi, buff, debuff, scudi, cure, ulti).",
+    "Risoluzione effetti di fine turno (Ferita, ecc.).",
+    "Passa il turno all’avversario."
+  ],
+  specialRules: [
+    "Turno 1: il giocatore che inizia non può usare carte che infliggono danno. Può solo buffare, curare, mettere scudi, ecc.",
+    "Tutte le Ultimate possono essere usate solo 1 volta per partita per personaggio.",
+    "Buff/Debuff con PAROLA CHIAVE sono \"visibili\" e stackano fino a 5 volte.",
+    "Buff/Debuff puramente numerici (ATK(P), DEF(P), LP(P), +X% stat, ecc.) sono \"invisibili\" e NON hanno limite di stack.",
+    "Gli effetti che aumentano gli LP massimi (LPmax) curano immediatamente dello stesso ammontare, salvo sia specificato diversamente.",
+    "Le cure non possono mai superare gli LP massimi del personaggio."
+  ]
+};
+
+const keywords = [
+  {
+    name: "Ferita",
+    type: "Debuff visibile",
+    text: "A fine di ogni turno, il personaggio perde il 7% degli LP rimanenti. Durata definita dalla carta che lo applica. Stackabile fino a 5 volte."
+  },
+  {
+    name: "Sotterramento",
+    type: "Debuff visibile",
+    text: "Per ogni stack: -5 DEF. Stackabile fino a 5 volte. Durata definita dalla carta o passiva che lo applica."
+  },
+  {
+    name: "Predatore Sotterraneo",
+    type: "Buff visibile",
+    text: "+15% danni finali contro nemici che hanno almeno 1 stack di Sotterramento. Stackabile fino a 5 volte."
+  },
+  {
+    name: "Rottura Critica",
+    type: "Debuff visibile",
+    text: "Il bersaglio subisce +15% danni dai colpi critici per stack (max 5). Se subisce un critico mentre è sotto questo debuff, ottiene -10 CritResist per 1 turno."
+  },
+  {
+    name: "Ringiovanimento",
+    type: "Buff visibile",
+    text: "All’inizio di ogni turno, per la durata, il personaggio ottiene +X% LP massimi e cura equivalente. Stackabile fino a 5 volte."
+  }
+];
+
+/* ===============================
+   PERSONAGGI
+   =============================== */
+
+const characters = [
+  {
+    id: "basil",
+    name: "Basil",
+    role: "Tank Support",
+    stats: {
+      LP: 980,
+      ATK: 63,
+      DEF: 40,
+      CritChance: "60%",
+      CritDamage: "120%",
+      CritResist: "22%",
+      CritDef: 47
+    },
+    passive: {
+      name: "Minerale Guardiano",
+      text: "Ogni 2 tuoi turni, a partire dal primo, scegli uno: (A) azzeri la CritChance di 1 nemico per il suo prossimo turno; (B) tutti gli alleati ottengono +10 LP(P), +5 ATK(P), +2 DEF(P), +3 CritDef(P)."
+    },
+    ultimate: {
+      name: "Fronte Minerale",
+      cost: 4,
+      text: "Per 2 turni: tutti gli alleati ottengono +15% LP massimi, +20% DEF, +15% CritDef. Tutti gli avversari subiscono -10% DEF e -10% CritDamage."
+    },
+    cards: [
+      {
+        name: "Colpo di Scisto",
+        cost: 1,
+        vc: "40%",
+        type: "Attacco singolo",
+        text: "Attacca un nemico con VC 40%."
+      },
+      {
+        name: "Muro di Scisti",
+        cost: 2,
+        type: "Scudo + DEF",
+        text: "Scegli un alleato: ottiene uno Scudo pari al 12% degli LP massimi di Basil per 2 turni e +10 DEF per 1 turno."
+      },
+      {
+        name: "Disgelo di Quarzo",
+        cost: 3,
+        type: "Cleanse + Cura",
+        text: "Tutti gli alleati rimuovono 1 debuff e curano il 30% degli LP massimi di Basil. Basil guadagna +30 LP(P)."
+      },
+      {
+        name: "Zoccolo Tellurico",
+        cost: 3,
+        vc: "70%",
+        type: "AOE + Ferita",
+        text: "Attacca tutti i nemici con VC 70%. Ogni bersaglio ottiene Ferita (3 turni): a fine turno perde il 7% degli LP rimanenti."
+      }
+    ]
+  },
+
+  {
+    id: "gael",
+    name: "Gael",
+    role: "Bruiser Difensivo",
+    stats: {
+      LP: 900,
+      ATK: 72,
+      DEF: 11,
+      CritChance: "30%",
+      CritDamage: "150%",
+      CritResist: "10%",
+      CritDef: 25
+    },
+    passive: {
+      name: "Corazza Crescente",
+      text: "Ogni 2 tuoi turni, a partire dal primo, tutti gli alleati ottengono +10 DEF(P), +10 CritDef(P), +6% CritResist(P)."
+    },
+    ultimate: {
+      name: "Assalto del Protettore",
+      cost: 4,
+      text: "Per questo turno, Gael ottiene +30% ATK e +30% CritDamage, poi attacca tutti i nemici (AOE) con VC 70%."
+    },
+    cards: [
+      {
+        name: "Colpo di Guardia",
+        cost: 1,
+        vc: "55%",
+        type: "Attacco singolo",
+        text: "Attacca un nemico con VC 55%."
+      },
+      {
+        name: "Resistenza Ferrea",
+        cost: 2,
+        type: "Buff difensivo",
+        text: "Gael ottiene +25% DEF per 2 turni."
+      },
+      {
+        name: "Sfida del Guardiano",
+        cost: 3,
+        type: "Protezione squadra",
+        text: "Per 2 turni: quando un tuo alleato (eccetto Gael) viene attaccato, l’attaccante subisce il 35% dell’ATK di Gael come danni diretti. Gael ottiene +10% LPmassimi(P)."
+      },
+      {
+        name: "Lama Risoluta",
+        cost: 2,
+        vc: "80%",
+        type: "Attacco + dispel",
+        text: "Attacca un nemico con VC 80%. Se infligge danno, rimuove 1 buff visibile dal bersaglio."
+      }
+    ]
+  },
+
+  {
+    id: "kiddou",
+    name: "Kiddou",
+    role: "Crit Support",
+    stats: {
+      LP: 820,
+      ATK: 58,
+      DEF: 23,
+      CritChance: "40%",
+      CritDamage: "160%",
+      CritResist: "20%",
+      CritDef: 26
+    },
+    passive: {
+      name: "Carica Crescente",
+      text: "Ogni 2 tuoi turni, a partire dal primo, tutti gli alleati ottengono +5% CritChance(P), +5% CritDamage(P), +5 CritDef(P)."
+    },
+    ultimate: {
+      name: "Schianto Luminoso",
+      cost: 4,
+      text: "Attiva immediatamente la passiva. Poi tutti gli alleati ottengono +10% CritChance(P). Infine Kiddou attacca un nemico con VC 60%."
+    },
+    cards: [
+      {
+        name: "Colpo Risolutivo",
+        cost: 1,
+        vc: "45%",
+        type: "Attacco singolo",
+        text: "Attacca un nemico con VC 45%."
+      },
+      {
+        name: "Richiamo Impetuoso",
+        cost: 2,
+        vc: "65%",
+        type: "Attacco + buff",
+        text: "Attacca un nemico con VC 65%. Tutti gli alleati ottengono +5% CritChance per 1 turno."
+      },
+      {
+        name: "Benedizione Infinita",
+        cost: 2,
+        type: "Buff Crit",
+        text: "Tutti gli alleati ottengono +8% CritChance per 1 turno. Kiddou guadagna +5 DEF(P)."
+      },
+      {
+        name: "Marchio del Collasso",
+        cost: 3,
+        type: "Debuff Rottura Critica",
+        text: "Scegli un nemico: applica Rottura Critica (2 turni). Per ogni stack subisce +15% danni dai critici (max 5). Se subisce un critico, ottiene -10 CritResist per 1 turno."
+      }
+    ]
+  },
+
+  {
+    id: "zagrok",
+    name: "Zagrok",
+    role: "Bruiser Offensivo / Viral",
+    stats: {
+      LP: 830,
+      ATK: 68,
+      DEF: 13,
+      CritChance: "30%",
+      CritDamage: "150%",
+      CritResist: "30%",
+      CritDef: 20
+    },
+    passive: {
+      name: "Diffusione del Virus",
+      text: "Ogni 2 tuoi turni, a partire dal primo, tutti gli alleati ottengono +30 LP(P), +2 DEF(P), +4 ATK(P)."
+    },
+    ultimate: {
+      name: "Esplosione Patogena",
+      cost: 4,
+      text: "Tutti gli alleati ottengono +5 ATK(P). Poi infligge danno a un nemico pari al 25% degli LPmassimi di Zagrok. Non può crittare, ma è ridotto dalla DEF."
+    },
+    cards: [
+      {
+        name: "Morso Virale",
+        cost: 1,
+        vc: "60%",
+        type: "Attacco singolo",
+        text: "Attacca un nemico con VC 60%. Se infligge danno, Zagrok ottiene +10 LP(P)."
+      },
+      {
+        name: "Sovraccarico Cellulare",
+        cost: 2,
+        vc: "85%",
+        type: "Attacco + buff",
+        text: "Attacca un nemico con VC 85%. Se Zagrok ha almeno 1 buff visibile, ottiene +4 ATK(P)."
+      },
+      {
+        name: "Ringiovanimento",
+        cost: 3,
+        type: "Buff Ringiovanimento",
+        text: "Per 2 turni, all’inizio di ogni turno tutti gli alleati ottengono +12% LPmassimi e cura equivalente."
+      },
+      {
+        name: "Espansione Pandemica",
+        cost: 3,
+        type: "Buff ATK + LPmax",
+        text: "Tutti gli alleati ottengono +8 ATK per 1 turno. Zagrok ottiene +12% LPmassimi(P)."
+      }
+    ]
+  },
+
+  {
+    id: "mordel",
+    name: "Mordel",
+    role: "Tank Debuffer",
+    stats: {
+      LP: 1020,
+      ATK: 60,
+      DEF: 32,
+      CritChance: "25%",
+      CritDamage: "150%",
+      CritResist: "25%",
+      CritDef: 33
+    },
+    passive: {
+      name: "Sotterramento Naturale",
+      text: "Ogni 2 tuoi turni, a partire dal primo, tutti i nemici ottengono Sotterramento x1 (3 turni): per ogni stack, -5 DEF (max 5 stack)."
+    },
+    ultimate: {
+      name: "Crepa Tellurica",
+      cost: 4,
+      text: "Infligge 2 stack di Sotterramento (3 turni) a tutti i nemici, poi infligge danno AOE con VC 70%."
+    },
+    cards: [
+      {
+        name: "Artiglio della Terra Morta",
+        cost: 1,
+        vc: "45%",
+        type: "Attacco condizionale",
+        text: "Attacca un nemico con VC 45%. Infligge +20% danni finali se il bersaglio ha almeno 1 debuff."
+      },
+      {
+        name: "Tomba di Pietra",
+        cost: 2,
+        type: "Scudo + DEF",
+        text: "Mordel ottiene uno Scudo pari al 18% dei suoi LPmassimi per 2 turni e +10 DEF per 1 turno."
+      },
+      {
+        name: "Sepoltura Lenta",
+        cost: 2,
+        vc: "50%",
+        type: "Attacco + Sotterramento",
+        text: "Attacca un nemico con VC 50%. Se infligge danno, applica 2 stack di Sotterramento (3 turni) al bersaglio."
+      },
+      {
+        name: "Abisso Silente",
+        cost: 3,
+        type: "Buff Predatore Sotterraneo",
+        text: "Tutti gli alleati ottengono Predatore Sotterraneo per 2 turni: infliggono +15% danni finali contro i nemici con almeno 1 Sotterramento."
+      }
+    ]
+  },
+
+  {
+    id: "rindu",
+    name: "Rindu",
+    role: "Bruiser Offensivo Auto-Scaling",
+    stats: {
+      LP: 860,
+      ATK: 78,
+      DEF: 28,
+      CritChance: "28%",
+      CritDamage: "150%",
+      CritResist: "20%",
+      CritDef: 22
+    },
+    passive: {
+      name: "Crescendo di Impulso",
+      text: "La prima volta in ogni tuo turno che Rindu infligge almeno 1 danno: Rindu ottiene +5 ATK(P), tutti gli alleati ottengono +25 LP(P). Buff invisibile, nessun limite di stack."
+    },
+    ultimate: {
+      name: "Impulso Primordiale",
+      cost: 4,
+      text: "Tutti gli alleati ottengono LPmassimi(P) pari al 70% dell’ATK attuale di Rindu, poi Rindu attacca un nemico con VC 90%."
+    },
+    cards: [
+      {
+        name: "Colpo Crescente",
+        cost: 1,
+        vc: "45%",
+        type: "Attacco singolo",
+        text: "Attacca un nemico con VC 45%. Se infligge danno, conta per attivare la passiva (se non è già stata attivata in questo turno)."
+      },
+      {
+        name: "Lama Ascensionale",
+        cost: 2,
+        vc: "65%",
+        type: "Attacco condizionale",
+        text: "Attacca un nemico con VC 65%. Se il bersaglio è sotto il 60% degli LP massimi, infligge +20% danni finali."
+      },
+      {
+        name: "Taglio Catartico",
+        cost: 3,
+        vc: "80%",
+        type: "Attacco potenziato",
+        text: "Attacca un nemico con VC 80%. Se infligge danno, Rindu ottiene +10 ATK(P)."
+      },
+      {
+        name: "Purificazione Vitale",
+        cost: 3,
+        type: "Cleanse + Cura",
+        text: "Tutti gli alleati rimuovono tutti i debuff e curano il 35% dell’ATK attuale di Rindu."
+      }
+    ]
+  },
+
+  {
+    id: "dionere",
+    name: "Dionere",
+    role: "Bruiser / Immortale",
+    stats: {
+      LP: 840,
+      ATK: 74,
+      DEF: 15,
+      CritChance: "25%",
+      CritDamage: "160%",
+      CritResist: "20%",
+      CritDef: 20
+    },
+    passive: {
+      name: "Ritorno dell’Aldilà",
+      text: "Quando, dopo aver subito danno, i suoi LP scendono tra +40 e -50, la passiva si attiva: Dionere torna a 50 LP e ottiene +12 ATK(P), +7 DEF(P), +10 CritDef(P). Ogni attivazione fornisce 1 stack, fino a un massimo di 5 stack totali. Se viene portata sotto -50 LP, muore senza attivarsi."
+    },
+    ultimate: {
+      name: "Vera Forma",
+      cost: 4,
+      text: "Forza l’attivazione della passiva (aggiunge 1 stack se non è già a 5), anche a LP pieni, poi Dionere torna a 120 LP. Gli aumenti permanenti di stat ottenuti rimangono."
+    },
+    cards: [
+      {
+        name: "Assalto Instabile",
+        cost: 1,
+        vc: "45%",
+        type: "Attacco singolo",
+        text: "Attacca un nemico con VC 45%. Se Dionere ha meno del 50% degli LP massimi, infligge +20% danni finali."
+      },
+      {
+        name: "Falce del Ritorno",
+        cost: 2,
+        vc: "55%",
+        type: "Attacco singolo",
+        text: "Attacca un nemico con VC 55%. Se Dionere è sotto il 60% degli LP massimi, infligge +20% danni finali. Se è sotto il 30% LP, invece infligge +40% danni finali."
+      },
+      {
+        name: "Ira della Fenice",
+        cost: 3,
+        vc: "65%",
+        type: "Attacco scaling passiva",
+        text: "Attacca un nemico con VC 65%. Se la passiva è stata attivata almeno 1 volta in questa partita, infligge +25 danni fissi. Se la passiva è stata attivata 3 o più volte, infligge invece +50 danni fissi. I danni fissi ignorano la DEF ma non gli scudi."
+      },
+      {
+        name: "Taglio della Rinascita",
+        cost: 2,
+        vc: "45%",
+        type: "Attacco + sustain",
+        text: "Attacca un nemico con VC 45%. Cura Dionere del 20% del danno inflitto; se è sotto il 50% degli LP massimi al momento dell’attacco, la cura diventa 40% del danno inflitto."
+      },
+      {
+        name: "Emorragia Oscura",
+        cost: 2,
+        type: "Auto-sacrificio + Ferita",
+        text: "Dionere perde il 10% degli LP massimi (non può ucciderla). Un nemico subisce Ferita x1 (3 turni). Se, dopo il self-damage, Dionere è sotto il 35% LP, la Ferita diventa x2 (2 stack)."
+      },
+      {
+        name: "Carico Disperato",
+        cost: 3,
+        type: "Buff danno condizionale",
+        text: "Per 2 turni: Dionere ottiene +30% ATK e +20% CritDamage. Se è sopra il 50% degli LP massimi al momento del cast, riceve solo metà effetto: +15% ATK e +10% CritDamage."
+      },
+      {
+        name: "Ombra Protettiva",
+        cost: 3,
+        type: "Difesa situazionale",
+        text: "Per 1 turno, Dionere riduce del 40% i danni subiti. Se durante questo turno scende sotto 40 LP, ottiene +12 ATK(P), +7 DEF(P), +10 CritDef(P). Questo effetto non conta come attivazione della passiva e non la cura a 50 o 120 LP, ma stacka con la passiva fino al limite globale di 5 stack."
+      }
+    ]
+  }
+];
+
+/* ===============================
+   RENDERING UI
+   =============================== */
+
+const contentEl = document.getElementById("content");
+const charNavEl = document.getElementById("charNav");
+const navItems = document.querySelectorAll(".nav-item[data-section]");
+
+function setActiveNav(element) {
+  document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
+  element.classList.add("active");
+}
+
+function renderRules() {
+  contentEl.innerHTML = "";
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `
+    <h2>Regole di base</h2>
+    <p class="subtitle">Riassunto del funzionamento di Neeva versione attuale.</p>
+
+    <h3>Pescata</h3>
+    <p class="small">
+      Mano iniziale: <span class="code-like">${rulesSummary.draw.initialHand} carte</span><br>
+      Pescata a inizio turno: <span class="code-like">${rulesSummary.draw.drawPerTurn} carte</span><br>
+      Mano massima: <span class="code-like">${rulesSummary.draw.maxHand} carte</span><br>
+      Se superi il limite, le carte in eccesso vengono scartate e messe in fondo al deck.
+      Per ogni carta scartata ottieni <span class="code-like">+1 mana</span> extra per il turno.
+    </p>
+
+    <h3>Mana</h3>
+    <p class="small">
+      Mana per turno: <span class="code-like">${rulesSummary.mana.basePerTurn}</span> (si resetta ogni tuo turno).<br>
+      Note:
+    </p>
+    <ul class="small">
+      ${rulesSummary.mana.notes.map(n => `<li>${n}</li>`).join("")}
+    </ul>
+
+    <h3>Struttura del turno</h3>
+    <ol class="small">
+      ${rulesSummary.turnStructure.map(step => `<li>${step}</li>`).join("")}
+    </ol>
+
+    <h3>Regole speciali</h3>
+    <ul class="small">
+      ${rulesSummary.specialRules.map(r => `<li>${r}</li>`).join("")}
+    </ul>
+  `;
+  contentEl.appendChild(card);
+}
+
+function renderKeywords() {
+  contentEl.innerHTML = "";
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `
+    <h2>Keyword & Debuff</h2>
+    <p class="subtitle">Stato visibili, stack e interazioni principali.</p>
+  `;
+  const list = document.createElement("div");
+  list.className = "card-list";
+  keywords.forEach(k => {
+    const item = document.createElement("div");
+    item.className = "ability-card";
+    item.innerHTML = `
+      <div class="ability-header">
+        <div class="ability-name"><span class="keyword">${k.name}</span></div>
+        <div class="ability-meta">${k.type}</div>
+      </div>
+      <div class="ability-body">${k.text}</div>
+    `;
+    list.appendChild(item);
+  });
+  card.appendChild(list);
+  contentEl.appendChild(card);
+}
+
+function renderCharacter(charId) {
+  const c = characters.find(ch => ch.id === charId);
+  if (!c) return;
+  contentEl.innerHTML = "";
+
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `
+    <h2>${c.name}</h2>
+    <p class="subtitle">${c.role}</p>
+
+    <div class="stat-grid">
+      <div><span class="stat-label">LP</span><br><span class="stat-value">${c.stats.LP}</span></div>
+      <div><span class="stat-label">ATK</span><br><span class="stat-value">${c.stats.ATK}</span></div>
+      <div><span class="stat-label">DEF</span><br><span class="stat-value">${c.stats.DEF}</span></div>
+      <div><span class="stat-label">Crit Chance</span><br><span class="stat-value">${c.stats.CritChance}</span></div>
+      <div><span class="stat-label">Crit Damage</span><br><span class="stat-value">${c.stats.CritDamage}</span></div>
+      <div><span class="stat-label">Crit Resist</span><br><span class="stat-value">${c.stats.CritResist}</span></div>
+      <div><span class="stat-label">Crit Def</span><br><span class="stat-value">${c.stats.CritDef}</span></div>
+    </div>
+
+    <h3>Passiva</h3>
+    <p class="small"><span class="keyword">${c.passive.name}</span>: ${c.passive.text}</p>
+
+    <h3>Ultimate</h3>
+    <p class="small">
+      <span class="keyword">${c.ultimate.name}</span> – <span class="code-like">Costo: ${c.ultimate.cost} mana</span><br>
+      ${c.ultimate.text}
+    </p>
+
+    <h3>Carte</h3>
+    <div class="card-list" id="card-list-${c.id}"></div>
+  `;
+
+  contentEl.appendChild(card);
+
+  const cardListEl = document.getElementById(`card-list-${c.id}`);
+  c.cards.forEach(cardData => {
+    const el = document.createElement("div");
+    el.className = "ability-card";
+
+    const vcPart = cardData.vc ? ` · VC ${cardData.vc}` : "";
+    el.innerHTML = `
+      <div class="ability-header">
+        <div class="ability-name">${cardData.name}</div>
+        <div class="ability-meta">Costo: ${cardData.cost}${vcPart}</div>
+      </div>
+      <div class="ability-body">
+        <div class="small"><strong>Tipo:</strong> ${cardData.type || "—"}</div>
+        <div>${cardData.text}</div>
+      </div>
+    `;
+    cardListEl.appendChild(el);
+  });
+}
+
+/* ===============================
+   NAV SETUP
+   =============================== */
+
+function buildCharNav() {
+  characters.forEach(ch => {
+    const item = document.createElement("div");
+    item.className = "nav-item";
+    item.dataset.section = `char-${ch.id}`;
+    item.dataset.charId = ch.id;
+    item.innerHTML = `
+      <span>${ch.name}</span>
+      <span class="tag">${ch.role.split("/")[0].trim()}</span>
+    `;
+    item.addEventListener("click", () => {
+      setActiveNav(item);
+      renderCharacter(ch.id);
+    });
+    charNavEl.appendChild(item);
+  });
+}
+
+navItems.forEach(item => {
+  item.addEventListener("click", () => {
+    setActiveNav(item);
+    const section = item.dataset.section;
+    if (section === "rules") renderRules();
+    else if (section === "keywords") renderKeywords();
+  });
+});
+
+/* ===============================
+   INIT
+   =============================== */
+
+buildCharNav();
+renderRules(); // default view
+
+</script>
+</body>
+</html>
