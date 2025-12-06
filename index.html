@@ -26,6 +26,28 @@
     header small {
       color: #9ca3af;
     }
+
+    /* Barra modalità sopra */
+    .top-nav {
+      display: flex;
+      gap: 8px;
+      padding: 8px 12px;
+      background: #020617;
+      border-bottom: 1px solid #1f2937;
+    }
+    .top-nav button {
+      background: #374151;
+      border: none;
+      color: #e5e7eb;
+      padding: 6px 10px;
+      font-size: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .top-nav button.active {
+      background: #1d4ed8;
+    }
+
     main {
       padding: 12px;
       display: grid;
@@ -214,6 +236,84 @@
       border: 1px dashed #4b5563;
       padding: 4px;
     }
+
+    /* Deck builder */
+    #deckView {
+      display: none;
+      grid-template-columns: 1.2fr 0.8fr;
+    }
+    .builder-section {
+      margin-bottom: 10px;
+    }
+    .builder-team-grid {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .builder-char {
+      background: #111827;
+      border-radius: 8px;
+      border: 1px solid #374151;
+      padding: 6px;
+      width: 140px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+    .builder-char.selected {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 2px #22c55e44;
+    }
+    .builder-char-name {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .builder-card-list {
+      max-height: 260px;
+      overflow-y: auto;
+      font-size: 11px;
+    }
+    .builder-card-row {
+      border-bottom: 1px solid #1f2937;
+      padding: 4px 0;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+    }
+    .builder-card-main {
+      flex: 1;
+    }
+    .builder-card-title {
+      font-weight: 600;
+      font-size: 11px;
+    }
+    .builder-card-meta {
+      font-size: 10px;
+      color: #9ca3af;
+    }
+    .builder-card-controls {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .builder-card-controls button {
+      padding: 2px 6px;
+      font-size: 11px;
+    }
+    .builder-counter {
+      min-width: 18px;
+      text-align: center;
+    }
+    .builder-summary-list {
+      font-size: 11px;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+    .builder-info {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
@@ -227,7 +327,14 @@
     </div>
   </header>
 
-  <main>
+  <!-- Switch modalità -->
+  <div class="top-nav">
+    <button id="btnModeGame" class="active">Partita</button>
+    <button id="btnModeDeck">Deck Builder</button>
+  </div>
+
+  <!-- VISTA PARTITA -->
+  <main id="gameView">
     <!-- COLONNA SINISTRA: Campo + Mano -->
     <div class="column">
       <div class="section-title">Campo di Battaglia</div>
@@ -260,7 +367,7 @@
       </div>
 
       <div class="controls">
-        <button id="btnResolve" disabled>Risolvi carte & fine turno</button>
+        <button id="btnResolve" disabled>Risolvi carte &amp; fine turno</button>
         <button id="btnResetTurn" class="secondary" disabled>Reset turno (annulla selezioni)</button>
       </div>
     </div>
@@ -271,11 +378,47 @@
       <div id="log" class="log"></div>
 
       <div style="margin-top:10px;">
-        <div class="section-title">Deck & Scarti</div>
+        <div class="section-title">Deck &amp; Scarti</div>
         <div style="font-size:11px;color:#9ca3af;">
           Carte nel deck: <span id="deckCount">0</span><br/>
           Carte negli scarti: <span id="discardCount">0</span>
         </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- VISTA DECK BUILDER -->
+  <main id="deckView">
+    <div class="column">
+      <div class="section-title">Deck Builder — Team &amp; Carte</div>
+
+      <!-- Selezione team -->
+      <div class="builder-section">
+        <div style="font-size:12px;font-weight:600;margin-bottom:4px;">1) Seleziona il tuo team (3 PG)</div>
+        <div id="builderTeam" class="builder-team-grid"></div>
+        <div class="builder-info">
+          Puoi selezionare esattamente 3 personaggi. Le carte disponibili verranno filtrate in base al team.
+        </div>
+      </div>
+
+      <!-- Selezione carte -->
+      <div class="builder-section">
+        <div style="font-size:12px;font-weight:600;margin-bottom:4px;">2) Carte disponibili (max 2 copie per carta)</div>
+        <div class="builder-card-list" id="builderCardPool"></div>
+      </div>
+    </div>
+
+    <div class="column">
+      <div class="section-title">Riepilogo Deck</div>
+      <div style="font-size:11px;color:#9ca3af;margin-bottom:4px;">
+        Numero carte selezionate: <span id="builderDeckCount">0</span> / 30
+      </div>
+      <div id="builderDeckSummary" class="builder-summary-list"></div>
+      <div class="builder-info" id="builderMessage"></div>
+
+      <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+        <button id="btnApplyDeck">Salva deck &amp; nuova partita</button>
+        <button id="btnResetDeck" class="secondary">Reset deck di default</button>
       </div>
     </div>
   </main>
@@ -294,6 +437,52 @@
       ULTI: "ultimate"
     };
 
+    // Definizione personaggi disponibili per il player (per il deck builder)
+    const PLAYER_CHAR_DEFS = {
+      basil: {
+        id: "basil",
+        name: "Basil",
+        stats: {
+          lp: 980, lpMax: 980, atk: 63, def: 40,
+          critChance: 60, critDmg: 120,
+          critResist: 22, critDef: 47
+        }
+      },
+      gael: {
+        id: "gael",
+        name: "Gael",
+        stats: {
+          lp: 900, lpMax: 900, atk: 72, def: 11,
+          critChance: 30, critDmg: 150,
+          critResist: 10, critDef: 25
+        }
+      },
+      zagrok: {
+        id: "zagrok",
+        name: "Zagrok",
+        stats: {
+          lp: 830, lpMax: 830, atk: 68, def: 13,
+          critChance: 30, critDmg: 150,
+          critResist: 30, critDef: 20
+        }
+      }
+    };
+
+    // Config del deck scelto dal giocatore
+    const defaultDeckIds = [
+      "basil_base",
+      "basil_muro",
+      "basil_disgelo",
+      "zagrok_ringiovanimento",
+      "player_generic_attack",
+      "zagrok_morso"
+    ];
+
+    const deckConfig = {
+      teamIds: ["basil", "gael", "zagrok"],  // id personaggi
+      cards: defaultDeckIds.map(id => ({ cardId: id, copies: 2 })) // 2 copie per tutti
+    };
+
     // Stato di gioco
     const gameState = {
       turn: 1,
@@ -303,55 +492,49 @@
       playerDeck: [],
       playerDiscard: [],
       playerHand: [],
-      pendingPlays: [],          // {card, sourceId, targets: [charId]}
+      pendingPlays: [],          // {card, sourceId, targetIds: [charId]}
       playerTeam: [],
       botTeam: [],
       selectedCardId: null,
       selectedTargets: [],
       targetMode: null,          // "enemySingle", "allySingle", "allyAll", "enemyAll", null
       mustSelectTarget: false,
-      targetSide: null,          // "player" | "bot"
+      targetSide: null           // "player" | "bot"
     };
 
     /****************************************************
-     * DEFINIZIONE PERSONAGGI (SEMPLIFICATA)
-     * Per ora usiamo 3 vs 3: Basil, Gael, Zagrok vs Mordel, Kiddou, Rindu
+     * DEFINIZIONE PERSONAGGI (MOTORE PARTITA)
      ****************************************************/
 
     function createCharacter(id, name, side, stats) {
       return {
         id,
         name,
-        side, // "player" | "bot"
-        base: { ...stats },  // valori base
-        current: { ...stats }, // modificati
+        side,
+        base: { ...stats },     // per eventuali reset
+        current: { ...stats },  // valori runtime
         shield: 0,
-        buffs: [],   // { keyword, duration, data }
-        debuffs: [], // idem
+        buffs: [],              // { keyword, duration, data }
+        debuffs: [],
         alive: true
       };
     }
 
     function initTeams() {
-      // Stat semplificate per questa demo
-      gameState.playerTeam = [
-        createCharacter("basil", "Basil", "player", {
-          lp: 980, lpMax: 980, atk: 63, def: 40,
-          critChance: 60, critDmg: 120,
-          critResist: 22, critDef: 47
-        }),
-        createCharacter("gael", "Gael", "player", {
-          lp: 900, lpMax: 900, atk: 72, def: 11,
-          critChance: 30, critDmg: 150,
-          critResist: 10, critDef: 25
-        }),
-        createCharacter("zagrok", "Zagrok", "player", {
-          lp: 830, lpMax: 830, atk: 68, def: 13,
-          critChance: 30, critDmg: 150,
-          critResist: 30, critDef: 20
-        })
-      ];
+      // Usa il team dal deckConfig, altrimenti default
+      const chosenTeamIds =
+        deckConfig.teamIds && deckConfig.teamIds.length === 3
+          ? deckConfig.teamIds
+          : ["basil", "gael", "zagrok"];
 
+      // Player team
+      gameState.playerTeam = chosenTeamIds.map(tid => {
+        const def = PLAYER_CHAR_DEFS[tid];
+        if (!def) return null;
+        return createCharacter(def.id, def.name, "player", def.stats);
+      }).filter(Boolean);
+
+      // Bot team (per ora fisso)
       gameState.botTeam = [
         createCharacter("mordel", "Mordel", "bot", {
           lp: 1020, lpMax: 1020, atk: 60, def: 32,
@@ -373,7 +556,6 @@
 
     /****************************************************
      * DEFINIZIONE CARTE REALI (SEMPLIFICATE)
-     * Ogni carta ha owner (PG), costo, VC, tipo, effetto
      ****************************************************/
 
     const allCards = [
@@ -436,6 +618,8 @@
           });
         }
       },
+
+      // ZAGROK
       {
         id: "zagrok_ringiovanimento",
         name: "Zagrok — Ringiovanimento",
@@ -458,6 +642,42 @@
         }
       },
       {
+        id: "zagrok_morso",
+        name: "Zagrok — Morso Virale",
+        owner: "Zagrok",
+        cost: 1,
+        type: VC_TYPES.SIMPLE,
+        target: "enemySingle",
+        vc: 0.60,
+        desc: "Attacco (VC 60%). Se infligge danno → +10 LP(P).",
+        effect: (source, targets) => {
+          const t = targets[0];
+          const dmg = simpleAttack(source, t, 0.60);
+          if (dmg > 0) {
+            source.current.lpMax += 10;
+            source.current.lp += 10;
+            logLine(`${source.name} guadagna +10 LP(P).`);
+          }
+        }
+      },
+
+      // GAEL
+      {
+        id: "player_generic_attack",
+        name: "Gael — Colpo di Guardia",
+        owner: "Gael",
+        cost: 1,
+        type: VC_TYPES.SIMPLE,
+        target: "enemySingle",
+        vc: 0.55,
+        desc: "Attacco singolo (VC 55%).",
+        effect: (source, targets) => {
+          simpleAttack(source, targets[0], 0.55);
+        }
+      },
+
+      // MORDEL AOE (solo per bot, ma è definita qui)
+      {
         id: "mordel_zoccolo_ferita",
         name: "Mordel — Ferita AOE",
         owner: "Mordel",
@@ -478,64 +698,229 @@
             logLine(`${t.name} subisce Ferita x1 (3 turni).`);
           });
         }
-      },
-      {
-        id: "player_generic_attack",
-        name: "Gael — Colpo di Guardia",
-        owner: "Gael",
-        cost: 1,
-        type: VC_TYPES.SIMPLE,
-        target: "enemySingle",
-        vc: 0.55,
-        desc: "Attacco singolo (VC 55%).",
-        effect: (source, targets) => {
-          simpleAttack(source, targets[0], 0.55);
-        }
-      },
-      {
-        id: "zagrok_morso",
-        name: "Zagrok — Morso Virale",
-        owner: "Zagrok",
-        cost: 1,
-        type: VC_TYPES.SIMPLE,
-        target: "enemySingle",
-        vc: 0.60,
-        desc: "Attacco (VC 60%). Se infligge danno → +10 LP(P).",
-        effect: (source, targets) => {
-          const t = targets[0];
-          const dmg = simpleAttack(source, t, 0.60);
-          if (dmg > 0) {
-            source.current.lpMax += 10;
-            source.current.lp += 10;
-            logLine(`${source.name} guadagna +10 LP(P).`);
-          }
-        }
       }
-      // TODO: qui possiamo aggiungere TUTTE le altre carte reali
-      // dei personaggi (Kiddou, Rindu, Dionere, ecc.)
+      // Poi qui aggiungeremo tutte le altre carte reali (Kiddou, Rindu, Dionere, ecc.)
     ];
 
-    // Helper per ottenere tutte le carte del player (deck base)
-    function buildPlayerDeck() {
-      // esempio: 2 copie di ogni carta non-ulti
-      const baseIds = [
-        "basil_base",
-        "basil_muro",
-        "basil_disgelo",
-        "zagrok_ringiovanimento",
-        "mordel_zoccolo_ferita",
-        "player_generic_attack",
-        "zagrok_morso"
-      ];
-      const deck = [];
-      baseIds.forEach(id => {
-        const card = allCards.find(c => c.id === id);
-        if (!card) return;
-        // 2 copie per ora
-        deck.push({ ...card });
-        deck.push({ ...card });
+    /****************************************************
+     * FUNZIONI DECK BUILDING
+     ****************************************************/
+
+    const deckBuilderState = {
+      teamIds: [...deckConfig.teamIds], // copia
+      cardCounts: {}                   // { cardId: nCopie }
+    };
+
+    function syncDeckBuilderFromConfig() {
+      deckBuilderState.teamIds = [...deckConfig.teamIds];
+      deckBuilderState.cardCounts = {};
+      (deckConfig.cards || []).forEach(c => {
+        deckBuilderState.cardCounts[c.cardId] = c.copies;
       });
-      return deck;
+      renderDeckBuilder();
+    }
+
+    function getDeckSizeFromBuilder() {
+      return Object.values(deckBuilderState.cardCounts).reduce((a, b) => a + b, 0);
+    }
+
+    function onBuilderToggleChar(charId) {
+      const idx = deckBuilderState.teamIds.indexOf(charId);
+      if (idx >= 0) {
+        // togli selezione
+        deckBuilderState.teamIds.splice(idx, 1);
+      } else {
+        if (deckBuilderState.teamIds.length >= 3) {
+          alert("Puoi avere al massimo 3 personaggi nel team.");
+          return;
+        }
+        deckBuilderState.teamIds.push(charId);
+      }
+
+      // Se togli un personaggio, rimuovi le carte dei PG non più in team
+      pruneDeckBuilderCardsByTeam();
+      renderDeckBuilder();
+    }
+
+    function pruneDeckBuilderCardsByTeam() {
+      const allowedOwners = deckBuilderState.teamIds
+        .map(tid => PLAYER_CHAR_DEFS[tid]?.name)
+        .filter(Boolean);
+      const newCounts = {};
+      Object.entries(deckBuilderState.cardCounts).forEach(([cardId, copies]) => {
+        const card = allCards.find(c => c.id === cardId);
+        if (!card) return;
+        if (!allowedOwners.includes(card.owner)) return;
+        newCounts[cardId] = copies;
+      });
+      deckBuilderState.cardCounts = newCounts;
+    }
+
+    function onBuilderChangeCardCount(cardId, delta) {
+      const card = allCards.find(c => c.id === cardId);
+      if (!card) return;
+
+      // Controlliamo che il proprietario sia nel team
+      const allowedOwners = deckBuilderState.teamIds
+        .map(tid => PLAYER_CHAR_DEFS[tid]?.name)
+        .filter(Boolean);
+      if (!allowedOwners.includes(card.owner)) {
+        alert("Non puoi aggiungere carte di personaggi che non sono nel team.");
+        return;
+      }
+
+      const current = deckBuilderState.cardCounts[cardId] || 0;
+      let next = current + delta;
+
+      if (next < 0) next = 0;
+      if (next > 2) next = 2; // max 2 copie
+
+      const currentDeckSize = getDeckSizeFromBuilder();
+      if (delta > 0 && currentDeckSize >= 30) {
+        alert("Hai già 30 carte nel deck.");
+        return;
+      }
+      // Se sto aumentando, verifico che non superi 30
+      if (delta > 0 && currentDeckSize + 1 > 30) {
+        alert("Il deck non può superare 30 carte.");
+        return;
+      }
+
+      if (next === 0) {
+        delete deckBuilderState.cardCounts[cardId];
+      } else {
+        deckBuilderState.cardCounts[cardId] = next;
+      }
+
+      renderDeckBuilder();
+    }
+
+    function renderDeckBuilder() {
+      const teamContainer = document.getElementById("builderTeam");
+      const poolContainer = document.getElementById("builderCardPool");
+      const summaryContainer = document.getElementById("builderDeckSummary");
+      const deckCountEl = document.getElementById("builderDeckCount");
+      const msgEl = document.getElementById("builderMessage");
+
+      // TEAM
+      teamContainer.innerHTML = "";
+      Object.values(PLAYER_CHAR_DEFS).forEach(def => {
+        const div = document.createElement("div");
+        div.className = "builder-char";
+        if (deckBuilderState.teamIds.includes(def.id)) {
+          div.classList.add("selected");
+        }
+        div.innerHTML = `
+          <div class="builder-char-name">${def.name}</div>
+          <div style="font-size:10px;color:#9ca3af;">
+            LP: ${def.stats.lpMax} — ATK: ${def.stats.atk} — DEF: ${def.stats.def}
+          </div>
+        `;
+        div.addEventListener("click", () => onBuilderToggleChar(def.id));
+        teamContainer.appendChild(div);
+      });
+
+      // CARD POOL: solo carte dei PG in team
+      const allowedOwners = deckBuilderState.teamIds
+        .map(tid => PLAYER_CHAR_DEFS[tid]?.name)
+        .filter(Boolean);
+
+      const poolCards = allCards.filter(c => allowedOwners.includes(c.owner));
+      poolContainer.innerHTML = "";
+      poolCards.forEach(card => {
+        const row = document.createElement("div");
+        row.className = "builder-card-row";
+
+        const main = document.createElement("div");
+        main.className = "builder-card-main";
+        main.innerHTML = `
+          <div class="builder-card-title">${card.name}</div>
+          <div class="builder-card-meta">
+            PG: ${card.owner} — Costo: ${card.cost}<br/>
+            ${card.desc}
+          </div>
+        `;
+        row.appendChild(main);
+
+        const controls = document.createElement("div");
+        controls.className = "builder-card-controls";
+
+        const minusBtn = document.createElement("button");
+        minusBtn.textContent = "-";
+        minusBtn.addEventListener("click", () => onBuilderChangeCardCount(card.id, -1));
+
+        const plusBtn = document.createElement("button");
+        plusBtn.textContent = "+";
+        plusBtn.addEventListener("click", () => onBuilderChangeCardCount(card.id, 1));
+
+        const countSpan = document.createElement("span");
+        countSpan.className = "builder-counter";
+        const count = deckBuilderState.cardCounts[card.id] || 0;
+        countSpan.textContent = count;
+
+        controls.appendChild(minusBtn);
+        controls.appendChild(countSpan);
+        controls.appendChild(plusBtn);
+        row.appendChild(controls);
+
+        poolContainer.appendChild(row);
+      });
+
+      // SUMMARY
+      summaryContainer.innerHTML = "";
+      const entries = Object.entries(deckBuilderState.cardCounts);
+      entries.sort((a, b) => {
+        const ca = allCards.find(c => c.id === a[0]);
+        const cb = allCards.find(c => c.id === b[0]);
+        return (ca?.name || "").localeCompare(cb?.name || "");
+      });
+
+      entries.forEach(([cardId, copies]) => {
+        const card = allCards.find(c => c.id === cardId);
+        if (!card) return;
+        const line = document.createElement("div");
+        line.textContent = `${copies}x ${card.name}`;
+        summaryContainer.appendChild(line);
+      });
+
+      const size = getDeckSizeFromBuilder();
+      deckCountEl.textContent = size;
+
+      let msg = "";
+      if (deckBuilderState.teamIds.length !== 3) {
+        msg += "Seleziona esattamente 3 personaggi per il team. ";
+      }
+      if (size !== 30) {
+        msg += "Il deck deve avere esattamente 30 carte.";
+      }
+      msgEl.textContent = msg;
+    }
+
+    function applyDeckBuilderConfig() {
+      const size = getDeckSizeFromBuilder();
+      if (deckBuilderState.teamIds.length !== 3) {
+        alert("Devi selezionare esattamente 3 personaggi nel team.");
+        return;
+      }
+      if (size !== 30) {
+        alert("Il deck deve avere esattamente 30 carte.");
+        return;
+      }
+      deckConfig.teamIds = [...deckBuilderState.teamIds];
+      deckConfig.cards = Object.entries(deckBuilderState.cardCounts).map(([cardId, copies]) => ({
+        cardId,
+        copies
+      }));
+      alert("Deck salvato! Avvio una nuova partita con questo deck.");
+      startGame(); // restart
+      // Switch vista su partita
+      switchToGameView();
+    }
+
+    function resetDeckToDefault() {
+      deckConfig.teamIds = ["basil", "gael", "zagrok"];
+      deckConfig.cards = defaultDeckIds.map(id => ({ cardId: id, copies: 2 }));
+      syncDeckBuilderFromConfig();
     }
 
     /****************************************************
@@ -560,6 +945,7 @@
     const logEl = document.getElementById("log");
 
     function logLine(text, isTurnHeader = false) {
+      if (!logEl) return;
       const div = document.createElement("div");
       div.className = "log-line" + (isTurnHeader ? " log-turn" : "");
       div.textContent = text;
@@ -583,7 +969,6 @@
     function processStartOfTurnEffects() {
       [...gameState.playerTeam, ...gameState.botTeam].forEach(ch => {
         if (!ch.alive) return;
-        // Ringiovanimento
         const ringio = ch.buffs.find(b => b.keyword === "Ringiovanimento");
         if (ringio) {
           const percent = ringio.data.percent || 0.12;
@@ -630,7 +1015,6 @@
         // Rimuovi buff scaduti
         ch.buffs = ch.buffs.filter(b => {
           if (b.duration > 0) return true;
-          // se Muro di Scisti, togli il +10 DEF
           if (b.keyword === "Muro di Scisti") {
             ch.current.def -= b.data.defBonus || 0;
             logLine(`Il buff Muro di Scisti su ${ch.name} è terminato.`);
@@ -647,9 +1031,6 @@
           logLine(`Il debuff ${d.keyword} su ${ch.name} è terminato.`);
           return false;
         });
-
-        // Lo scudo dura 2 turni? In questa versione non lo facciamo scadere automaticamente,
-        // ma lo consumiamo solo con i danni. Se vuoi una durata, possiamo aggiungerla.
       });
     }
 
@@ -660,7 +1041,7 @@
     function simpleAttack(source, target, vc) {
       if (!source.alive || !target.alive) return 0;
       const raw = Math.round(source.current.atk * vc);
-      // prima scudo
+
       let remaining = raw;
       if (target.shield > 0) {
         const absorbed = Math.min(target.shield, remaining);
@@ -698,10 +1079,29 @@
       }
     }
 
+    function buildPlayerDeck() {
+      // Se il deckConfig è vuoto → usa default
+      if (!deckConfig.cards || deckConfig.cards.length === 0) {
+        return defaultDeckIds.flatMap(id => {
+          const card = allCards.find(c => c.id === id);
+          if (!card) return [];
+          return [{ ...card }, { ...card }];
+        });
+      }
+      const deck = [];
+      deckConfig.cards.forEach(entry => {
+        const base = allCards.find(c => c.id === entry.cardId);
+        if (!base) return;
+        for (let i = 0; i < entry.copies; i++) {
+          deck.push({ ...base });
+        }
+      });
+      return deck;
+    }
+
     function drawCards(n) {
       for (let i = 0; i < n; i++) {
         if (gameState.playerDeck.length === 0) {
-          // reshuffle scarti (tranne eventuali Ulti, se le marcassimo)
           if (gameState.playerDiscard.length > 0) {
             gameState.playerDeck = gameState.playerDiscard.splice(0);
             shuffle(gameState.playerDeck);
@@ -732,7 +1132,9 @@
       gameState.playerMana = 0;
       gameState.phase = "draw";
 
-      logEl.innerHTML = "";
+      if (logEl) {
+        logEl.innerHTML = "";
+      }
       logLine("Inizio partita.");
       // Mano iniziale: 7
       drawCards(7);
@@ -743,6 +1145,8 @@
     function startPlayerTurn() {
       logLine("");
       logLine(`— TURNO ${gameState.turn} — GIOCATORE`, true);
+      // Inizio turno → effetti tipo Ringiovanimento
+      processStartOfTurnEffects();
       // Fase pescata
       gameState.phase = "draw";
       drawCards(3);
@@ -759,14 +1163,20 @@
       gameState.phase = "resolve";
       updateUIPhase();
 
-      // Risolvi le carte in coda nell'ordine in cui sono state selezionate
       if (gameState.pendingPlays.length === 0) {
         logLine("Nessuna carta da risolvere, passi il turno.");
       } else {
         gameState.pendingPlays.forEach(play => {
           const { card, sourceId, targetIds } = play;
           const source = findCharById(sourceId);
-          const targets = targetIds.map(id => findCharById(id)).filter(t => t && t.alive);
+          let targets = [];
+          if (card.target === "allyAll") {
+            targets = getTeam(source.side).filter(t => t.alive);
+          } else if (card.target === "enemyAll") {
+            targets = getOpposingTeam(source.side).filter(t => t.alive);
+          } else {
+            targets = targetIds.map(id => findCharById(id)).filter(t => t && t.alive);
+          }
           if (!source || !source.alive) return;
           logLine(`>> ${source.name} usa "${card.name}"`);
           try {
@@ -796,7 +1206,9 @@
       logLine("");
       logLine(`— TURNO ${gameState.turn} — BOT`, true);
 
-      // Esempio semplice: bot attacca con un colpo base "a caso"
+      // Effetti inizio turno bot (Ringiovanimento, ecc.)
+      processStartOfTurnEffects();
+
       const aliveBot = gameState.botTeam.filter(c => c.alive);
       const alivePlayer = gameState.playerTeam.filter(c => c.alive);
       if (aliveBot.length === 0 || alivePlayer.length === 0) {
@@ -814,10 +1226,8 @@
       tickDurations();
       render();
 
-      // Check fine partita
       if (endGameCheck()) return;
 
-      // Incremento numero turno e passa di nuovo al giocatore
       gameState.turn += 1;
       startPlayerTurn();
     }
@@ -854,7 +1264,7 @@
         return;
       }
 
-      // Si gioca la carta → entra in pending, si scala il mana, la carta esce dalla mano.
+      // scala il mana
       gameState.playerMana -= card.cost;
 
       // Determinare chi è il PG che lancia la carta (owner)
@@ -865,33 +1275,27 @@
         return;
       }
 
-      // Gestione target
       const targetType = card.target;
       gameState.selectedCardId = card.id;
       gameState.selectedTargets = [];
       gameState.targetMode = targetType;
 
       if (targetType === "allyAll" || targetType === "enemyAll") {
-        // Non serve selezione: tutti i bersagli sono determinati in fase di risoluzione
-        // Qui però salviamo placeholder (saranno calcolati dopo).
         gameState.pendingPlays.push({
           card,
           sourceId: source.id,
-          targetIds: []  // vuoto, verrà interpretato come "all ally" o "all enemy" dall'effetto
+          targetIds: []
         });
         logLine(`Hai messo in coda "${card.name}" (bersaglio: ${targetType}).`);
-        // Rimuovi carta dalla mano → negli scarti
         moveCardFromHandToDiscard(card.id);
         updatePendingListUI();
         render();
       } else {
-        // Serve selezionare un bersaglio singolo
         gameState.mustSelectTarget = true;
         gameState.targetSide = (targetType === "allySingle" ? "player" : "bot");
         logLine(`Seleziona il bersaglio per "${card.name}".`);
       }
 
-      // Attiva pulsanti
       document.getElementById("btnResolve").disabled = false;
       document.getElementById("btnResetTurn").disabled = false;
       render();
@@ -901,7 +1305,6 @@
       const idx = gameState.playerHand.findIndex(c => c.id === cardId);
       if (idx >= 0) {
         const [card] = gameState.playerHand.splice(idx, 1);
-        // Le Ulti NON vanno nel discard; qui tutte sono normali
         gameState.playerDiscard.push(card);
       }
     }
@@ -921,7 +1324,6 @@
         return;
       }
 
-      // Registriamo il target
       gameState.pendingPlays.push({
         card,
         sourceId: source.id,
@@ -929,10 +1331,8 @@
       });
       logLine(`Hai messo in coda "${card.name}" su ${findCharById(charId).name}.`);
 
-      // Rimuovi la carta dalla mano → negli scarti
       moveCardFromHandToDiscard(card.id);
 
-      // Resetta stato di selezione
       gameState.selectedCardId = null;
       gameState.selectedTargets = [];
       gameState.mustSelectTarget = false;
@@ -965,12 +1365,10 @@
 
     function resetTurnSelection() {
       if (gameState.phase !== "play") return;
-      // Rimettiamo tutte le carte pending nella mano e restituiamo il mana speso
       let manaRefund = 0;
       gameState.pendingPlays.forEach(p => {
         manaRefund += p.card.cost;
         gameState.playerHand.push(p.card);
-        // rimuoviamo anche dagli scarti (perché le abbiamo spostate lì quando messe in coda)
         const idx = gameState.playerDiscard.findIndex(c => c.id === p.card.id);
         if (idx >= 0) gameState.playerDiscard.splice(idx, 1);
       });
@@ -1009,11 +1407,6 @@
       team.forEach(ch => {
         const div = document.createElement("div");
         div.className = "char-card" + (isEnemy ? " enemy" : "");
-        if (gameState.mustSelectTarget &&
-            ((gameState.targetSide === "player" && ch.side === "player") ||
-             (gameState.targetSide === "bot" && ch.side === "bot"))) {
-          div.classList.add("selectable");
-        }
         const name = document.createElement("div");
         name.className = "char-name";
         name.textContent = ch.name + (ch.alive ? "" : " (KO)");
@@ -1111,6 +1504,25 @@
     }
 
     /****************************************************
+     * SWITCH VISTA PARTITA / DECK BUILDER
+     ****************************************************/
+
+    function switchToGameView() {
+      document.getElementById("gameView").style.display = "grid";
+      document.getElementById("deckView").style.display = "none";
+      document.getElementById("btnModeGame").classList.add("active");
+      document.getElementById("btnModeDeck").classList.remove("active");
+    }
+
+    function switchToDeckView() {
+      document.getElementById("gameView").style.display = "none";
+      document.getElementById("deckView").style.display = "grid";
+      document.getElementById("btnModeGame").classList.remove("active");
+      document.getElementById("btnModeDeck").classList.add("active");
+      syncDeckBuilderFromConfig();
+    }
+
+    /****************************************************
      * EVENT LISTENERS
      ****************************************************/
 
@@ -1122,6 +1534,20 @@
 
     document.getElementById("btnResetTurn").addEventListener("click", () => {
       resetTurnSelection();
+    });
+
+    document.getElementById("btnModeGame").addEventListener("click", () => {
+      switchToGameView();
+    });
+    document.getElementById("btnModeDeck").addEventListener("click", () => {
+      switchToDeckView();
+    });
+
+    document.getElementById("btnApplyDeck").addEventListener("click", () => {
+      applyDeckBuilderConfig();
+    });
+    document.getElementById("btnResetDeck").addEventListener("click", () => {
+      resetDeckToDefault();
     });
 
     /****************************************************
