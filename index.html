@@ -26,28 +26,6 @@
     header small {
       color: #9ca3af;
     }
-
-    /* Barra modalità sopra */
-    .top-nav {
-      display: flex;
-      gap: 8px;
-      padding: 8px 12px;
-      background: #020617;
-      border-bottom: 1px solid #1f2937;
-    }
-    .top-nav button {
-      background: #374151;
-      border: none;
-      color: #e5e7eb;
-      padding: 6px 10px;
-      font-size: 12px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .top-nav button.active {
-      background: #1d4ed8;
-    }
-
     main {
       padding: 12px;
       display: grid;
@@ -84,9 +62,6 @@
     .char-card.enemy {
       border-color: #7f1d1d;
     }
-    .char-card.selected-target {
-      box-shadow: 0 0 0 2px #e5e7eb;
-    }
     .char-name {
       font-weight: 600;
       font-size: 13px;
@@ -108,9 +83,6 @@
       color: #9ca3af;
       line-height: 1.2;
     }
-    .bad {
-      color: #f97316;
-    }
     .buff-tags, .debuff-tags {
       display: flex;
       flex-wrap: wrap;
@@ -131,7 +103,6 @@
       border-color: #f97316;
       color: #fed7aa;
     }
-
     .hand {
       display: flex;
       flex-wrap: wrap;
@@ -150,9 +121,6 @@
     }
     .card-btn.player {
       border-color: #4b5563;
-    }
-    .card-btn.pending {
-      outline: 2px solid #22c55e;
     }
     .card-name {
       font-weight: 600;
@@ -178,7 +146,6 @@
       color: #e5e7eb;
       margin-bottom: 2px;
     }
-
     .controls {
       margin-top: 8px;
       display: flex;
@@ -236,84 +203,6 @@
       border: 1px dashed #4b5563;
       padding: 4px;
     }
-
-    /* Deck builder */
-    #deckView {
-      display: none;
-      grid-template-columns: 1.2fr 0.8fr;
-    }
-    .builder-section {
-      margin-bottom: 10px;
-    }
-    .builder-team-grid {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .builder-char {
-      background: #111827;
-      border-radius: 8px;
-      border: 1px solid #374151;
-      padding: 6px;
-      width: 140px;
-      cursor: pointer;
-      font-size: 11px;
-    }
-    .builder-char.selected {
-      border-color: #22c55e;
-      box-shadow: 0 0 0 2px #22c55e44;
-    }
-    .builder-char-name {
-      font-weight: 600;
-      margin-bottom: 2px;
-    }
-    .builder-card-list {
-      max-height: 260px;
-      overflow-y: auto;
-      font-size: 11px;
-    }
-    .builder-card-row {
-      border-bottom: 1px solid #1f2937;
-      padding: 4px 0;
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      align-items: center;
-    }
-    .builder-card-main {
-      flex: 1;
-    }
-    .builder-card-title {
-      font-weight: 600;
-      font-size: 11px;
-    }
-    .builder-card-meta {
-      font-size: 10px;
-      color: #9ca3af;
-    }
-    .builder-card-controls {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .builder-card-controls button {
-      padding: 2px 6px;
-      font-size: 11px;
-    }
-    .builder-counter {
-      min-width: 18px;
-      text-align: center;
-    }
-    .builder-summary-list {
-      font-size: 11px;
-      max-height: 180px;
-      overflow-y: auto;
-    }
-    .builder-info {
-      font-size: 11px;
-      color: #9ca3af;
-      margin-top: 4px;
-    }
   </style>
 </head>
 <body>
@@ -327,14 +216,7 @@
     </div>
   </header>
 
-  <!-- Switch modalità -->
-  <div class="top-nav">
-    <button id="btnModeGame" class="active">Partita</button>
-    <button id="btnModeDeck">Deck Builder</button>
-  </div>
-
-  <!-- VISTA PARTITA -->
-  <main id="gameView">
+  <main>
     <!-- COLONNA SINISTRA: Campo + Mano -->
     <div class="column">
       <div class="section-title">Campo di Battaglia</div>
@@ -367,7 +249,7 @@
       </div>
 
       <div class="controls">
-        <button id="btnResolve" disabled>Risolvi carte &amp; fine turno</button>
+        <button id="btnResolve" disabled>Risolvi carte & fine turno</button>
         <button id="btnResetTurn" class="secondary" disabled>Reset turno (annulla selezioni)</button>
       </div>
     </div>
@@ -378,47 +260,11 @@
       <div id="log" class="log"></div>
 
       <div style="margin-top:10px;">
-        <div class="section-title">Deck &amp; Scarti</div>
+        <div class="section-title">Deck & Scarti</div>
         <div style="font-size:11px;color:#9ca3af;">
           Carte nel deck: <span id="deckCount">0</span><br/>
           Carte negli scarti: <span id="discardCount">0</span>
         </div>
-      </div>
-    </div>
-  </main>
-
-  <!-- VISTA DECK BUILDER -->
-  <main id="deckView">
-    <div class="column">
-      <div class="section-title">Deck Builder — Team &amp; Carte</div>
-
-      <!-- Selezione team -->
-      <div class="builder-section">
-        <div style="font-size:12px;font-weight:600;margin-bottom:4px;">1) Seleziona il tuo team (3 PG)</div>
-        <div id="builderTeam" class="builder-team-grid"></div>
-        <div class="builder-info">
-          Puoi selezionare esattamente 3 personaggi. Le carte disponibili verranno filtrate in base al team.
-        </div>
-      </div>
-
-      <!-- Selezione carte -->
-      <div class="builder-section">
-        <div style="font-size:12px;font-weight:600;margin-bottom:4px;">2) Carte disponibili (max 2 copie per carta)</div>
-        <div class="builder-card-list" id="builderCardPool"></div>
-      </div>
-    </div>
-
-    <div class="column">
-      <div class="section-title">Riepilogo Deck</div>
-      <div style="font-size:11px;color:#9ca3af;margin-bottom:4px;">
-        Numero carte selezionate: <span id="builderDeckCount">0</span> / 30
-      </div>
-      <div id="builderDeckSummary" class="builder-summary-list"></div>
-      <div class="builder-info" id="builderMessage"></div>
-
-      <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
-        <button id="btnApplyDeck">Salva deck &amp; nuova partita</button>
-        <button id="btnResetDeck" class="secondary">Reset deck di default</button>
       </div>
     </div>
   </main>
@@ -437,62 +283,16 @@
       ULTI: "ultimate"
     };
 
-    // Definizione personaggi disponibili per il player (per il deck builder)
-    const PLAYER_CHAR_DEFS = {
-      basil: {
-        id: "basil",
-        name: "Basil",
-        stats: {
-          lp: 980, lpMax: 980, atk: 63, def: 40,
-          critChance: 60, critDmg: 120,
-          critResist: 22, critDef: 47
-        }
-      },
-      gael: {
-        id: "gael",
-        name: "Gael",
-        stats: {
-          lp: 900, lpMax: 900, atk: 72, def: 11,
-          critChance: 30, critDmg: 150,
-          critResist: 10, critDef: 25
-        }
-      },
-      zagrok: {
-        id: "zagrok",
-        name: "Zagrok",
-        stats: {
-          lp: 830, lpMax: 830, atk: 68, def: 13,
-          critChance: 30, critDmg: 150,
-          critResist: 30, critDef: 20
-        }
-      }
-    };
-
-    // Config del deck scelto dal giocatore
-    const defaultDeckIds = [
-      "basil_base",
-      "basil_muro",
-      "basil_disgelo",
-      "zagrok_ringiovanimento",
-      "player_generic_attack",
-      "zagrok_morso"
-    ];
-
-    const deckConfig = {
-      teamIds: ["basil", "gael", "zagrok"],  // id personaggi
-      cards: defaultDeckIds.map(id => ({ cardId: id, copies: 2 })) // 2 copie per tutti
-    };
-
     // Stato di gioco
     const gameState = {
       turn: 1,
-      phase: "idle",             // "draw", "play", "resolve", "enemy"
+      phase: "idle",             // "draw", "play", "resolve", "enemy", "ended"
       playerMana: 0,
       playerManaMax: 7,
       playerDeck: [],
       playerDiscard: [],
       playerHand: [],
-      pendingPlays: [],          // {card, sourceId, targetIds: [charId]}
+      pendingPlays: [],          // {card, sourceId, targetIds:[charId]}
       playerTeam: [],
       botTeam: [],
       selectedCardId: null,
@@ -503,38 +303,42 @@
     };
 
     /****************************************************
-     * DEFINIZIONE PERSONAGGI (MOTORE PARTITA)
+     * PERSONAGGI (sempre Basil / Gael / Zagrok vs Mordel / Kiddou / Rindu)
      ****************************************************/
 
     function createCharacter(id, name, side, stats) {
       return {
         id,
         name,
-        side,
-        base: { ...stats },     // per eventuali reset
-        current: { ...stats },  // valori runtime
+        side,              // "player" | "bot"
+        base: { ...stats },
+        current: { ...stats },
         shield: 0,
-        buffs: [],              // { keyword, duration, data }
-        debuffs: [],
+        buffs: [],         // [{keyword, duration, stacks, data}]
+        debuffs: [],       // idem
         alive: true
       };
     }
 
     function initTeams() {
-      // Usa il team dal deckConfig, altrimenti default
-      const chosenTeamIds =
-        deckConfig.teamIds && deckConfig.teamIds.length === 3
-          ? deckConfig.teamIds
-          : ["basil", "gael", "zagrok"];
+      gameState.playerTeam = [
+        createCharacter("basil", "Basil", "player", {
+          lp: 980, lpMax: 980, atk: 63, def: 27,
+          critChance: 60, critDmg: 120,
+          critResist: 22, critDef: 47
+        }),
+        createCharacter("gael", "Gael", "player", {
+          lp: 900, lpMax: 900, atk: 72, def: 11,
+          critChance: 30, critDmg: 150,
+          critResist: 10, critDef: 25
+        }),
+        createCharacter("zagrok", "Zagrok", "player", {
+          lp: 830, lpMax: 830, atk: 68, def: 13,
+          critChance: 30, critDmg: 150,
+          critResist: 30, critDef: 20
+        })
+      ];
 
-      // Player team
-      gameState.playerTeam = chosenTeamIds.map(tid => {
-        const def = PLAYER_CHAR_DEFS[tid];
-        if (!def) return null;
-        return createCharacter(def.id, def.name, "player", def.stats);
-      }).filter(Boolean);
-
-      // Bot team (per ora fisso)
       gameState.botTeam = [
         createCharacter("mordel", "Mordel", "bot", {
           lp: 1020, lpMax: 1020, atk: 60, def: 32,
@@ -555,7 +359,7 @@
     }
 
     /****************************************************
-     * DEFINIZIONE CARTE REALI (SEMPLIFICATE)
+     * CARTE (subset reale, il resto lo aggiungiamo dopo)
      ****************************************************/
 
     const allCards = [
@@ -568,7 +372,7 @@
         type: VC_TYPES.SIMPLE,
         vc: 0.40,
         target: "enemySingle",
-        desc: "Attacco base (VC 40%).",
+        desc: "Attacco singolo (VC 40%).",
         effect: (source, targets) => {
           const t = targets[0];
           simpleAttack(source, t, 0.40);
@@ -581,7 +385,7 @@
         cost: 2,
         type: VC_TYPES.BUFF,
         target: "allySingle",
-        desc: "Scudo 12% LPmax Basil +10 DEF per 1 turno.",
+        desc: "Scudo 12% LPmax Basil +10 DEF (1 turno).",
         effect: (source, targets) => {
           const t = targets[0];
           const shieldAmount = Math.round(source.current.lpMax * 0.12);
@@ -589,6 +393,7 @@
           addBuff(t, {
             keyword: "Muro di Scisti",
             duration: 1,
+            stacks: 1,
             data: { defBonus: 10 }
           });
           t.current.def += 10;
@@ -602,7 +407,7 @@
         cost: 3,
         type: VC_TYPES.UTILITY,
         target: "allyAll",
-        desc: "Rimuove 1 debuff e cura 30% LPmax di Basil a tutti.",
+        desc: "Tutti gli alleati: rimuovono 1 debuff e curano 30% LPmax Basil. Basil +30 LP(P).",
         effect: (source, targets) => {
           const heal = Math.round(source.current.lpMax * 0.30);
           const allies = getTeam(source.side);
@@ -612,14 +417,15 @@
               ch.debuffs.shift();
               logLine(`Debuff rimosso da ${ch.name}.`);
             }
-            const newLp = Math.min(ch.current.lp + heal, ch.current.lpMax);
-            logLine(`${ch.name} cura ${newLp - ch.current.lp} LP.`);
-            ch.current.lp = newLp;
+            const healed = Math.min(ch.current.lp + heal, ch.current.lpMax) - ch.current.lp;
+            ch.current.lp += healed;
+            logLine(`${ch.name} cura ${healed} LP.`);
           });
+          source.current.lpMax += 30;
+          source.current.lp += 30;
+          logLine(`${source.name} ottiene +30 LP(P).`);
         }
       },
-
-      // ZAGROK
       {
         id: "zagrok_ringiovanimento",
         name: "Zagrok — Ringiovanimento",
@@ -627,7 +433,7 @@
         cost: 3,
         type: VC_TYPES.BUFF,
         target: "allyAll",
-        desc: "Ringiovanimento (2 turni): ogni turno +12% LPmax e cura equivalente.",
+        desc: "Ringiovanimento (2 turni): ogni inizio turno +12% LPmax e cura equivalente.",
         effect: (source, targets) => {
           const allies = getTeam(source.side);
           allies.forEach(ch => {
@@ -635,10 +441,47 @@
             addBuff(ch, {
               keyword: "Ringiovanimento",
               duration: 2,
-              data: { percent: 0.12 }
+              stacks: 1,
+              data: { percentPerStack: 0.12 }
             });
             logLine(`${ch.name} ottiene Ringiovanimento (2 turni).`);
           });
+        }
+      },
+      {
+        id: "mordel_zoccolo_ferita",
+        name: "Mordel — Ferita AOE",
+        owner: "Mordel",
+        cost: 3,
+        type: VC_TYPES.AOE,
+        target: "enemyAll",
+        desc: "AOE (VC 60%) + Ferita x1 (3 turni) a tutti i nemici.",
+        effect: (source, targets) => {
+          const enemies = getOpposingTeam(source.side);
+          enemies.forEach(t => {
+            if (!t.alive) return;
+            simpleAttack(source, t, 0.60);
+            addDebuff(t, {
+              keyword: "Ferita",
+              duration: 3,
+              stacks: 1,
+              data: {}
+            });
+            logLine(`${t.name} subisce Ferita x1 (3 turni).`);
+          });
+        }
+      },
+      {
+        id: "player_generic_attack",
+        name: "Gael — Colpo di Guardia",
+        owner: "Gael",
+        cost: 1,
+        type: VC_TYPES.SIMPLE,
+        target: "enemySingle",
+        vc: 0.55,
+        desc: "Attacco singolo (VC 55%).",
+        effect: (source, targets) => {
+          simpleAttack(source, targets[0], 0.55);
         }
       },
       {
@@ -659,272 +502,31 @@
             logLine(`${source.name} guadagna +10 LP(P).`);
           }
         }
-      },
-
-      // GAEL
-      {
-        id: "player_generic_attack",
-        name: "Gael — Colpo di Guardia",
-        owner: "Gael",
-        cost: 1,
-        type: VC_TYPES.SIMPLE,
-        target: "enemySingle",
-        vc: 0.55,
-        desc: "Attacco singolo (VC 55%).",
-        effect: (source, targets) => {
-          simpleAttack(source, targets[0], 0.55);
-        }
-      },
-
-      // MORDEL AOE (solo per bot, ma è definita qui)
-      {
-        id: "mordel_zoccolo_ferita",
-        name: "Mordel — Ferita AOE",
-        owner: "Mordel",
-        cost: 3,
-        type: VC_TYPES.AOE,
-        target: "enemyAll",
-        desc: "Danni AOE (VC 60%) + Ferita x1 (3 turni).",
-        effect: (source, targets) => {
-          const enemies = getOpposingTeam(source.side);
-          enemies.forEach(t => {
-            if (!t.alive) return;
-            simpleAttack(source, t, 0.60);
-            addDebuff(t, {
-              keyword: "Ferita",
-              duration: 3,
-              data: { stacks: 1 }
-            });
-            logLine(`${t.name} subisce Ferita x1 (3 turni).`);
-          });
-        }
       }
-      // Poi qui aggiungeremo tutte le altre carte reali (Kiddou, Rindu, Dionere, ecc.)
     ];
 
-    /****************************************************
-     * FUNZIONI DECK BUILDING
-     ****************************************************/
-
-    const deckBuilderState = {
-      teamIds: [...deckConfig.teamIds], // copia
-      cardCounts: {}                   // { cardId: nCopie }
-    };
-
-    function syncDeckBuilderFromConfig() {
-      deckBuilderState.teamIds = [...deckConfig.teamIds];
-      deckBuilderState.cardCounts = {};
-      (deckConfig.cards || []).forEach(c => {
-        deckBuilderState.cardCounts[c.cardId] = c.copies;
-      });
-      renderDeckBuilder();
-    }
-
-    function getDeckSizeFromBuilder() {
-      return Object.values(deckBuilderState.cardCounts).reduce((a, b) => a + b, 0);
-    }
-
-    function onBuilderToggleChar(charId) {
-      const idx = deckBuilderState.teamIds.indexOf(charId);
-      if (idx >= 0) {
-        // togli selezione
-        deckBuilderState.teamIds.splice(idx, 1);
-      } else {
-        if (deckBuilderState.teamIds.length >= 3) {
-          alert("Puoi avere al massimo 3 personaggi nel team.");
-          return;
-        }
-        deckBuilderState.teamIds.push(charId);
-      }
-
-      // Se togli un personaggio, rimuovi le carte dei PG non più in team
-      pruneDeckBuilderCardsByTeam();
-      renderDeckBuilder();
-    }
-
-    function pruneDeckBuilderCardsByTeam() {
-      const allowedOwners = deckBuilderState.teamIds
-        .map(tid => PLAYER_CHAR_DEFS[tid]?.name)
-        .filter(Boolean);
-      const newCounts = {};
-      Object.entries(deckBuilderState.cardCounts).forEach(([cardId, copies]) => {
-        const card = allCards.find(c => c.id === cardId);
+    function buildPlayerDeck() {
+      const baseIds = [
+        "basil_base",
+        "basil_muro",
+        "basil_disgelo",
+        "zagrok_ringiovanimento",
+        "mordel_zoccolo_ferita",
+        "player_generic_attack",
+        "zagrok_morso"
+      ];
+      const deck = [];
+      baseIds.forEach(id => {
+        const card = allCards.find(c => c.id === id);
         if (!card) return;
-        if (!allowedOwners.includes(card.owner)) return;
-        newCounts[cardId] = copies;
+        deck.push({ ...card });
+        deck.push({ ...card });
       });
-      deckBuilderState.cardCounts = newCounts;
-    }
-
-    function onBuilderChangeCardCount(cardId, delta) {
-      const card = allCards.find(c => c.id === cardId);
-      if (!card) return;
-
-      // Controlliamo che il proprietario sia nel team
-      const allowedOwners = deckBuilderState.teamIds
-        .map(tid => PLAYER_CHAR_DEFS[tid]?.name)
-        .filter(Boolean);
-      if (!allowedOwners.includes(card.owner)) {
-        alert("Non puoi aggiungere carte di personaggi che non sono nel team.");
-        return;
-      }
-
-      const current = deckBuilderState.cardCounts[cardId] || 0;
-      let next = current + delta;
-
-      if (next < 0) next = 0;
-      if (next > 2) next = 2; // max 2 copie
-
-      const currentDeckSize = getDeckSizeFromBuilder();
-      if (delta > 0 && currentDeckSize >= 30) {
-        alert("Hai già 30 carte nel deck.");
-        return;
-      }
-      // Se sto aumentando, verifico che non superi 30
-      if (delta > 0 && currentDeckSize + 1 > 30) {
-        alert("Il deck non può superare 30 carte.");
-        return;
-      }
-
-      if (next === 0) {
-        delete deckBuilderState.cardCounts[cardId];
-      } else {
-        deckBuilderState.cardCounts[cardId] = next;
-      }
-
-      renderDeckBuilder();
-    }
-
-    function renderDeckBuilder() {
-      const teamContainer = document.getElementById("builderTeam");
-      const poolContainer = document.getElementById("builderCardPool");
-      const summaryContainer = document.getElementById("builderDeckSummary");
-      const deckCountEl = document.getElementById("builderDeckCount");
-      const msgEl = document.getElementById("builderMessage");
-
-      // TEAM
-      teamContainer.innerHTML = "";
-      Object.values(PLAYER_CHAR_DEFS).forEach(def => {
-        const div = document.createElement("div");
-        div.className = "builder-char";
-        if (deckBuilderState.teamIds.includes(def.id)) {
-          div.classList.add("selected");
-        }
-        div.innerHTML = `
-          <div class="builder-char-name">${def.name}</div>
-          <div style="font-size:10px;color:#9ca3af;">
-            LP: ${def.stats.lpMax} — ATK: ${def.stats.atk} — DEF: ${def.stats.def}
-          </div>
-        `;
-        div.addEventListener("click", () => onBuilderToggleChar(def.id));
-        teamContainer.appendChild(div);
-      });
-
-      // CARD POOL: solo carte dei PG in team
-      const allowedOwners = deckBuilderState.teamIds
-        .map(tid => PLAYER_CHAR_DEFS[tid]?.name)
-        .filter(Boolean);
-
-      const poolCards = allCards.filter(c => allowedOwners.includes(c.owner));
-      poolContainer.innerHTML = "";
-      poolCards.forEach(card => {
-        const row = document.createElement("div");
-        row.className = "builder-card-row";
-
-        const main = document.createElement("div");
-        main.className = "builder-card-main";
-        main.innerHTML = `
-          <div class="builder-card-title">${card.name}</div>
-          <div class="builder-card-meta">
-            PG: ${card.owner} — Costo: ${card.cost}<br/>
-            ${card.desc}
-          </div>
-        `;
-        row.appendChild(main);
-
-        const controls = document.createElement("div");
-        controls.className = "builder-card-controls";
-
-        const minusBtn = document.createElement("button");
-        minusBtn.textContent = "-";
-        minusBtn.addEventListener("click", () => onBuilderChangeCardCount(card.id, -1));
-
-        const plusBtn = document.createElement("button");
-        plusBtn.textContent = "+";
-        plusBtn.addEventListener("click", () => onBuilderChangeCardCount(card.id, 1));
-
-        const countSpan = document.createElement("span");
-        countSpan.className = "builder-counter";
-        const count = deckBuilderState.cardCounts[card.id] || 0;
-        countSpan.textContent = count;
-
-        controls.appendChild(minusBtn);
-        controls.appendChild(countSpan);
-        controls.appendChild(plusBtn);
-        row.appendChild(controls);
-
-        poolContainer.appendChild(row);
-      });
-
-      // SUMMARY
-      summaryContainer.innerHTML = "";
-      const entries = Object.entries(deckBuilderState.cardCounts);
-      entries.sort((a, b) => {
-        const ca = allCards.find(c => c.id === a[0]);
-        const cb = allCards.find(c => c.id === b[0]);
-        return (ca?.name || "").localeCompare(cb?.name || "");
-      });
-
-      entries.forEach(([cardId, copies]) => {
-        const card = allCards.find(c => c.id === cardId);
-        if (!card) return;
-        const line = document.createElement("div");
-        line.textContent = `${copies}x ${card.name}`;
-        summaryContainer.appendChild(line);
-      });
-
-      const size = getDeckSizeFromBuilder();
-      deckCountEl.textContent = size;
-
-      let msg = "";
-      if (deckBuilderState.teamIds.length !== 3) {
-        msg += "Seleziona esattamente 3 personaggi per il team. ";
-      }
-      if (size !== 30) {
-        msg += "Il deck deve avere esattamente 30 carte.";
-      }
-      msgEl.textContent = msg;
-    }
-
-    function applyDeckBuilderConfig() {
-      const size = getDeckSizeFromBuilder();
-      if (deckBuilderState.teamIds.length !== 3) {
-        alert("Devi selezionare esattamente 3 personaggi nel team.");
-        return;
-      }
-      if (size !== 30) {
-        alert("Il deck deve avere esattamente 30 carte.");
-        return;
-      }
-      deckConfig.teamIds = [...deckBuilderState.teamIds];
-      deckConfig.cards = Object.entries(deckBuilderState.cardCounts).map(([cardId, copies]) => ({
-        cardId,
-        copies
-      }));
-      alert("Deck salvato! Avvio una nuova partita con questo deck.");
-      startGame(); // restart
-      // Switch vista su partita
-      switchToGameView();
-    }
-
-    function resetDeckToDefault() {
-      deckConfig.teamIds = ["basil", "gael", "zagrok"];
-      deckConfig.cards = defaultDeckIds.map(id => ({ cardId: id, copies: 2 }));
-      syncDeckBuilderFromConfig();
+      return deck;
     }
 
     /****************************************************
-     * FUNZIONI UTILI: TEAM, TARGET, LOG
+     * UTILITY: TEAM, LOG
      ****************************************************/
 
     function getTeam(side) {
@@ -945,7 +547,6 @@
     const logEl = document.getElementById("log");
 
     function logLine(text, isTurnHeader = false) {
-      if (!logEl) return;
       const div = document.createElement("div");
       div.className = "log-line" + (isTurnHeader ? " log-turn" : "");
       div.textContent = text;
@@ -954,57 +555,107 @@
     }
 
     /****************************************************
-     * BUFF & DEBUFF (con keyword)
+     * BUFF / DEBUFF SYSTEM (visibili)
      ****************************************************/
 
+    // Ogni buff/debuff:
+    // { keyword, duration, stacks, data }
+    // - Max 5 stack per keyword per personaggio
+    // - Statistiche (ATK(P), LP(P) ecc.) sono gestite a parte e NON contano come buff
+
+    function getStacks(list, keyword) {
+      return list
+        .filter(e => e.keyword === keyword)
+        .reduce((sum, e) => sum + (e.stacks || 1), 0);
+    }
+
     function addBuff(character, buff) {
-      character.buffs.push({ ...buff });
+      const currentStacks = getStacks(character.buffs, buff.keyword);
+      if (currentStacks >= 5) {
+        logLine(`${character.name} ha già 5 stack di ${buff.keyword}.`);
+        return;
+      }
+      const newStacks = buff.stacks || 1;
+      const allowed = Math.min(newStacks, 5 - currentStacks);
+      if (allowed <= 0) {
+        logLine(`${character.name} non può ottenere altri stack di ${buff.keyword}.`);
+        return;
+      }
+      const buffCopy = { ...buff, stacks: allowed };
+      character.buffs.push(buffCopy);
     }
 
     function addDebuff(character, debuff) {
-      character.debuffs.push({ ...debuff });
+      const currentStacks = getStacks(character.debuffs, debuff.keyword);
+      if (currentStacks >= 5) {
+        logLine(`${character.name} ha già 5 stack di ${debuff.keyword}.`);
+        return;
+      }
+      const newStacks = debuff.stacks || 1;
+      const allowed = Math.min(newStacks, 5 - currentStacks);
+      if (allowed <= 0) {
+        logLine(`${character.name} non può ottenere altri stack di ${debuff.keyword}.`);
+        return;
+      }
+      const debuffCopy = { ...debuff, stacks: allowed };
+      character.debuffs.push(debuffCopy);
     }
 
-    // Elaborazione all'inizio del turno (per Ringiovanimento, ecc.)
+    // Effetti di INIZIO TURNO (buff tipo Ringiovanimento)
     function processStartOfTurnEffects() {
       [...gameState.playerTeam, ...gameState.botTeam].forEach(ch => {
         if (!ch.alive) return;
-        const ringio = ch.buffs.find(b => b.keyword === "Ringiovanimento");
-        if (ringio) {
-          const percent = ringio.data.percent || 0.12;
-          const gain = Math.round(ch.current.lpMax * percent);
-          ch.current.lpMax += gain;
-          ch.current.lp += gain;
-          logLine(`${ch.name} (Ringiovanimento): +${gain} LPmax & curati ${gain} LP.`);
+
+        // Ringiovanimento: somma tutti gli stack attivi
+        const ringioBuffs = ch.buffs.filter(b => b.keyword === "Ringiovanimento");
+        if (ringioBuffs.length > 0) {
+          const totalStacks = ringioBuffs.reduce((s, b) => s + (b.stacks || 1), 0);
+          const percentPerStack = ringioBuffs[0].data.percentPerStack || 0.12;
+          const totalPercent = totalStacks * percentPerStack;
+          const gain = Math.floor(ch.current.lpMax * totalPercent);
+          if (gain > 0) {
+            ch.current.lpMax += gain;
+            ch.current.lp += gain;
+            logLine(`${ch.name} (Ringiovanimento x${totalStacks}): +${gain} LPmax e +${gain} LP.`);
+          }
         }
       });
     }
 
-    // Elaborazione fine turno (Ferita)
+    // Effetti di FINE TURNO (Ferita, ecc.)
     function processEndOfTurnEffects() {
       [...gameState.playerTeam, ...gameState.botTeam].forEach(ch => {
         if (!ch.alive) return;
+
+        // Ferita: 7% degli LP rimanenti per stack, consumando prima lo scudo
         const ferite = ch.debuffs.filter(d => d.keyword === "Ferita");
         if (ferite.length > 0) {
-          let totalStacks = 0;
-          ferite.forEach(d => {
-            totalStacks += d.data.stacks || 1;
-          });
+          const totalStacks = ferite.reduce((s, d) => s + (d.stacks || 1), 0);
           const percent = 0.07 * totalStacks;
-          const loss = Math.round(ch.current.lp * percent);
+          let loss = Math.floor(ch.current.lp * percent);
           if (loss > 0) {
-            ch.current.lp = Math.max(0, ch.current.lp - loss);
-            logLine(`${ch.name} perde ${loss} LP per Ferita (${totalStacks} stack).`);
-          }
-          if (ch.current.lp <= 0) {
-            ch.alive = false;
-            logLine(`${ch.name} è caduto a causa di Ferita.`);
+            let remaining = loss;
+            if (ch.shield > 0) {
+              const absorbed = Math.min(ch.shield, remaining);
+              ch.shield -= absorbed;
+              remaining -= absorbed;
+              logLine(`${ch.name} assorbe ${absorbed} danni da Ferita con lo Scudo.`);
+            }
+            if (remaining > 0) {
+              const actual = Math.min(ch.current.lp, remaining);
+              ch.current.lp -= actual;
+              logLine(`${ch.name} perde ${actual} LP per Ferita (${totalStacks} stack).`);
+              if (ch.current.lp <= 0) {
+                ch.alive = false;
+                logLine(`${ch.name} è caduto a causa di Ferita.`);
+              }
+            }
           }
         }
       });
     }
 
-    // Decrementa durata buff/debuff e rimuove quelli scaduti
+    // Decrementa duration e rimuove buff/debuff scaduti
     function tickDurations() {
       [...gameState.playerTeam, ...gameState.botTeam].forEach(ch => {
         if (!ch.alive) return;
@@ -1012,20 +663,21 @@
         ch.buffs.forEach(b => { b.duration -= 1; });
         ch.debuffs.forEach(d => { d.duration -= 1; });
 
-        // Rimuovi buff scaduti
         ch.buffs = ch.buffs.filter(b => {
           if (b.duration > 0) return true;
           if (b.keyword === "Muro di Scisti") {
-            ch.current.def -= b.data.defBonus || 0;
+            ch.current.def -= (b.data.defBonus || 0);
             logLine(`Il buff Muro di Scisti su ${ch.name} è terminato.`);
           }
           if (b.keyword === "Ringiovanimento") {
             logLine(`Il buff Ringiovanimento su ${ch.name} è terminato.`);
           }
+          if (b.keyword === "Predatore Sotterraneo") {
+            logLine(`Il buff Predatore Sotterraneo su ${ch.name} è terminato.`);
+          }
           return false;
         });
 
-        // Rimuovi debuff scaduti
         ch.debuffs = ch.debuffs.filter(d => {
           if (d.duration > 0) return true;
           logLine(`Il debuff ${d.keyword} su ${ch.name} è terminato.`);
@@ -1035,30 +687,48 @@
     }
 
     /****************************************************
-     * COMBATTIMENTO SEMPLIFICATO (senza crit per ora)
+     * COMBATTIMENTO (ancora senza critici veri)
      ****************************************************/
 
     function simpleAttack(source, target, vc) {
       if (!source.alive || !target.alive) return 0;
-      const raw = Math.round(source.current.atk * vc);
+
+      // Danno base lordo
+      let raw = Math.round(source.current.atk * vc);
+
+      // Predatore Sotterraneo (buff) se il bersaglio ha Sotterramento
+      const hasSotterramento = getStacks(target.debuffs, "Sotterramento") > 0;
+      if (hasSotterramento) {
+        const predStacks = getStacks(source.buffs, "Predatore Sotterraneo");
+        if (predStacks > 0) {
+          const bonusMult = 1 + 0.15 * predStacks;
+          raw = Math.round(raw * bonusMult);
+          logLine(`${source.name} (Predatore Sotterraneo x${predStacks}) aumenta i danni a ${target.name}.`);
+        }
+      }
 
       let remaining = raw;
+
+      // Prima lo scudo
       if (target.shield > 0) {
         const absorbed = Math.min(target.shield, remaining);
         target.shield -= absorbed;
         remaining -= absorbed;
         logLine(`${target.name} assorbe ${absorbed} danni con lo Scudo.`);
       }
+
       if (remaining <= 0) {
         logLine(`${source.name} colpisce ${target.name}, ma non infligge danni ai LP.`);
         return 0;
       }
+
       const def = target.current.def;
       const dmg = Math.max(0, remaining - def);
       if (dmg <= 0) {
         logLine(`${source.name} colpisce ${target.name}, ma la DIFESA blocca il colpo.`);
         return 0;
       }
+
       target.current.lp = Math.max(0, target.current.lp - dmg);
       logLine(`${source.name} infligge ${dmg} danni a ${target.name}.`);
       if (target.current.lp <= 0) {
@@ -1069,7 +739,7 @@
     }
 
     /****************************************************
-     * DECK, PESCA, SCARTI, RESHUFFLE
+     * DECK, PESCA, SCARTI
      ****************************************************/
 
     function shuffle(array) {
@@ -1077,26 +747,6 @@
         const j = Math.floor(Math.random() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
       }
-    }
-
-    function buildPlayerDeck() {
-      // Se il deckConfig è vuoto → usa default
-      if (!deckConfig.cards || deckConfig.cards.length === 0) {
-        return defaultDeckIds.flatMap(id => {
-          const card = allCards.find(c => c.id === id);
-          if (!card) return [];
-          return [{ ...card }, { ...card }];
-        });
-      }
-      const deck = [];
-      deckConfig.cards.forEach(entry => {
-        const base = allCards.find(c => c.id === entry.cardId);
-        if (!base) return;
-        for (let i = 0; i < entry.copies; i++) {
-          deck.push({ ...base });
-        }
-      });
-      return deck;
     }
 
     function drawCards(n) {
@@ -1132,9 +782,7 @@
       gameState.playerMana = 0;
       gameState.phase = "draw";
 
-      if (logEl) {
-        logEl.innerHTML = "";
-      }
+      logEl.innerHTML = "";
       logLine("Inizio partita.");
       // Mano iniziale: 7
       drawCards(7);
@@ -1145,13 +793,18 @@
     function startPlayerTurn() {
       logLine("");
       logLine(`— TURNO ${gameState.turn} — GIOCATORE`, true);
-      // Inizio turno → effetti tipo Ringiovanimento
+
+      // Effetti di inizio turno (Ringiovanimento ecc.)
       processStartOfTurnEffects();
+
       // Fase pescata
       gameState.phase = "draw";
       drawCards(3);
-      // mana pieno
+
+      // Mana pieno
       gameState.playerMana = gameState.playerManaMax;
+
+      // Fase giocata
       gameState.phase = "play";
       gameState.pendingPlays = [];
       updateUIPhase();
@@ -1169,14 +822,18 @@
         gameState.pendingPlays.forEach(play => {
           const { card, sourceId, targetIds } = play;
           const source = findCharById(sourceId);
-          let targets = [];
-          if (card.target === "allyAll") {
-            targets = getTeam(source.side).filter(t => t.alive);
-          } else if (card.target === "enemyAll") {
-            targets = getOpposingTeam(source.side).filter(t => t.alive);
-          } else {
-            targets = targetIds.map(id => findCharById(id)).filter(t => t && t.alive);
+          let targets = targetIds.map(id => findCharById(id)).filter(t => t && t.alive);
+
+          // AllyAll / EnemyAll vengono risolti guardando il side
+          if ((card.target === "allyAll" || card.target === "enemyAll") && targets.length === 0) {
+            const side = source.side;
+            if (card.target === "allyAll") {
+              targets = getTeam(side).filter(c => c.alive);
+            } else {
+              targets = getOpposingTeam(side).filter(c => c.alive);
+            }
           }
+
           if (!source || !source.alive) return;
           logLine(`>> ${source.name} usa "${card.name}"`);
           try {
@@ -1196,7 +853,7 @@
       tickDurations();
       render();
 
-      // Dopo aver risolto → turno bot
+      // Turno bot
       setTimeout(startBotTurn, 400);
     }
 
@@ -1206,7 +863,7 @@
       logLine("");
       logLine(`— TURNO ${gameState.turn} — BOT`, true);
 
-      // Effetti inizio turno bot (Ringiovanimento, ecc.)
+      // Effetti di inizio turno (anche per bot)
       processStartOfTurnEffects();
 
       const aliveBot = gameState.botTeam.filter(c => c.alive);
@@ -1215,19 +872,21 @@
         endGameCheck();
         return;
       }
+
       const attacker = aliveBot[Math.floor(Math.random() * aliveBot.length)];
       const target = alivePlayer[Math.floor(Math.random() * alivePlayer.length)];
 
       logLine(`${attacker.name} attacca ${target.name} (bot base attack).`);
       simpleAttack(attacker, target, 0.50);
 
-      // Fine turno bot: Ferita ecc.
+      // Fine turno bot
       processEndOfTurnEffects();
       tickDurations();
       render();
 
       if (endGameCheck()) return;
 
+      // Prossimo turno globale
       gameState.turn += 1;
       startPlayerTurn();
     }
@@ -1252,7 +911,7 @@
     }
 
     /****************************************************
-     * HANDLING CARTE GIOCATE & SELEZIONE BERSAGLI
+     * CARTE & TARGET
      ****************************************************/
 
     function onCardClick(cardId) {
@@ -1264,10 +923,8 @@
         return;
       }
 
-      // scala il mana
       gameState.playerMana -= card.cost;
 
-      // Determinare chi è il PG che lancia la carta (owner)
       const source = gameState.playerTeam.find(c => c.name === card.owner);
       if (!source || !source.alive) {
         alert("Il personaggio che dovrebbe usare questa carta non è disponibile.");
@@ -1312,7 +969,7 @@
     function onCharacterClick(charId, side) {
       if (!gameState.mustSelectTarget) return;
       if (gameState.targetSide !== side) {
-        alert("Questa carta può essere usata solo su un personaggio del lato corretto.");
+        alert("Questa carta può essere usata solo sul lato corretto.");
         return;
       }
       const card = allCards.find(c => c.id === gameState.selectedCardId);
@@ -1407,6 +1064,7 @@
       team.forEach(ch => {
         const div = document.createElement("div");
         div.className = "char-card" + (isEnemy ? " enemy" : "");
+
         const name = document.createElement("div");
         name.className = "char-name";
         name.textContent = ch.name + (ch.alive ? "" : " (KO)");
@@ -1435,7 +1093,8 @@
           ch.buffs.forEach(b => {
             const t = document.createElement("span");
             t.className = "tag buff";
-            t.textContent = `${b.keyword} (${b.duration})`;
+            const stacks = b.stacks || 1;
+            t.textContent = `${b.keyword}${stacks > 1 ? " x" + stacks : ""} (${b.duration})`;
             buffs.appendChild(t);
           });
           div.appendChild(buffs);
@@ -1446,7 +1105,8 @@
           ch.debuffs.forEach(d => {
             const t = document.createElement("span");
             t.className = "tag debuff";
-            t.textContent = `${d.keyword} (${d.duration})`;
+            const stacks = d.stacks || 1;
+            t.textContent = `${d.keyword}${stacks > 1 ? " x" + stacks : ""} (${d.duration})`;
             debuffs.appendChild(t);
           });
           div.appendChild(debuffs);
@@ -1504,26 +1164,7 @@
     }
 
     /****************************************************
-     * SWITCH VISTA PARTITA / DECK BUILDER
-     ****************************************************/
-
-    function switchToGameView() {
-      document.getElementById("gameView").style.display = "grid";
-      document.getElementById("deckView").style.display = "none";
-      document.getElementById("btnModeGame").classList.add("active");
-      document.getElementById("btnModeDeck").classList.remove("active");
-    }
-
-    function switchToDeckView() {
-      document.getElementById("gameView").style.display = "none";
-      document.getElementById("deckView").style.display = "grid";
-      document.getElementById("btnModeGame").classList.remove("active");
-      document.getElementById("btnModeDeck").classList.add("active");
-      syncDeckBuilderFromConfig();
-    }
-
-    /****************************************************
-     * EVENT LISTENERS
+     * EVENTI
      ****************************************************/
 
     document.getElementById("btnResolve").addEventListener("click", () => {
@@ -1534,20 +1175,6 @@
 
     document.getElementById("btnResetTurn").addEventListener("click", () => {
       resetTurnSelection();
-    });
-
-    document.getElementById("btnModeGame").addEventListener("click", () => {
-      switchToGameView();
-    });
-    document.getElementById("btnModeDeck").addEventListener("click", () => {
-      switchToDeckView();
-    });
-
-    document.getElementById("btnApplyDeck").addEventListener("click", () => {
-      applyDeckBuilderConfig();
-    });
-    document.getElementById("btnResetDeck").addEventListener("click", () => {
-      resetDeckToDefault();
     });
 
     /****************************************************
