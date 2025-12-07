@@ -56,7 +56,7 @@
       border-radius: 6px;
       padding: 6px;
       border: 1px solid #374151;
-      width: 160px;
+      width: 180px;
       cursor: pointer;
     }
     .char-card.enemy {
@@ -103,6 +103,7 @@
       border-color: #f97316;
       color: #fed7aa;
     }
+
     .hand {
       display: flex;
       flex-wrap: wrap;
@@ -113,7 +114,7 @@
       border-radius: 6px;
       border: 1px solid #374151;
       padding: 6px;
-      min-width: 150px;
+      min-width: 160px;
       cursor: pointer;
       font-size: 11px;
       text-align: left;
@@ -146,6 +147,7 @@
       color: #e5e7eb;
       margin-bottom: 2px;
     }
+
     .controls {
       margin-top: 8px;
       display: flex;
@@ -206,982 +208,1260 @@
   </style>
 </head>
 <body>
-  <header>
+<header>
+  <div>
+    <h1>Neeva — Prototype Engine</h1>
+    <small>Turni, deck, buff/debuff con keyword, scarti & reshuffle</small>
+  </div>
+  <div style="font-size:12px;color:#9ca3af">
+    Giocatore: <strong>Player</strong> vs <strong>Bot</strong>
+  </div>
+</header>
+
+<main>
+  <!-- COLONNA SINISTRA: Campo + Mano -->
+  <div class="column">
+    <div class="section-title">Campo di Battaglia</div>
+    <div class="mana-label">
+      Turno <span id="turnNumber">1</span> —
+      Mana: <span class="mana-value" id="playerMana">0</span> / 7
+    </div>
+    <div style="font-size:11px;color:#9ca3af;margin-bottom:4px">
+      Fase: <span id="phaseLabel">-</span>
+    </div>
+
     <div>
-      <h1>Neeva — Prototype Engine</h1>
-      <small>Turni, deck, buff/debuff con keyword, scarti & reshuffle</small>
+      <div style="font-size:12px;font-weight:600;margin-bottom:2px;">Il tuo team</div>
+      <div class="team" id="playerTeam"></div>
     </div>
-    <div style="font-size:12px;color:#9ca3af">
-      Giocatore: <strong>Player</strong> vs <strong>Bot</strong>
+
+    <div>
+      <div style="font-size:12px;font-weight:600;margin:6px 0 2px;">Team avversario</div>
+      <div class="team" id="botTeam"></div>
     </div>
-  </header>
 
-  <main>
-    <!-- COLONNA SINISTRA: Campo + Mano -->
-    <div class="column">
-      <div class="section-title">Campo di Battaglia</div>
-      <div class="mana-label">
-        Turno <span id="turnNumber">1</span> —
-        Mana: <span class="mana-value" id="playerMana">0</span> / 7
-      </div>
-
-      <div style="font-size:11px;color:#9ca3af;margin-bottom:4px">
-        Fase: <span id="phaseLabel">-</span>
-      </div>
-
-      <div>
-        <div style="font-size:12px;font-weight:600;margin-bottom:2px;">Il tuo team</div>
-        <div class="team" id="playerTeam"></div>
-      </div>
-
-      <div>
-        <div style="font-size:12px;font-weight:600;margin:6px 0 2px;">Team avversario</div>
-        <div class="team" id="botTeam"></div>
-      </div>
-
-      <div style="margin-top:10px;">
-        <div class="section-title">Le tue carte in mano</div>
-        <div class="hand" id="playerHand"></div>
-        <div class="pending-list">
-          <div style="font-weight:600;margin-bottom:2px;">Carte in coda per questo turno:</div>
-          <div id="pendingPlaysList" style="font-size:11px;color:#e5e7eb;">(nessuna)</div>
-        </div>
-      </div>
-
-      <div class="controls">
-        <button id="btnResolve" disabled>Risolvi carte & fine turno</button>
-        <button id="btnResetTurn" class="secondary" disabled>Reset turno (annulla selezioni)</button>
+    <div style="margin-top:10px;">
+      <div class="section-title">Le tue carte in mano</div>
+      <div class="hand" id="playerHand"></div>
+      <div class="pending-list">
+        <div style="font-weight:600;margin-bottom:2px;">Carte in coda per questo turno:</div>
+        <div id="pendingPlaysList" style="font-size:11px;color:#e5e7eb;">(nessuna)</div>
       </div>
     </div>
 
-    <!-- COLONNA DESTRA: Log + Info Deck -->
-    <div class="column">
-      <div class="section-title">Log di gioco</div>
-      <div id="log" class="log"></div>
+    <div class="controls">
+      <button id="btnResolve" disabled>Risolvi carte & fine turno</button>
+      <button id="btnResetTurn" class="secondary" disabled>Reset turno (annulla selezioni)</button>
+    </div>
+  </div>
 
-      <div style="margin-top:10px;">
-        <div class="section-title">Deck & Scarti</div>
-        <div style="font-size:11px;color:#9ca3af;">
-          Carte nel deck: <span id="deckCount">0</span><br/>
-          Carte negli scarti: <span id="discardCount">0</span>
-        </div>
+  <!-- COLONNA DESTRA: Log + Info Deck -->
+  <div class="column">
+    <div class="section-title">Log di gioco</div>
+    <div id="log" class="log"></div>
+
+    <div style="margin-top:10px;">
+      <div class="section-title">Deck & Scarti</div>
+      <div style="font-size:11px;color:#9ca3af;">
+        Carte nel deck: <span id="deckCount">0</span><br/>
+        Carte negli scarti: <span id="discardCount">0</span>
       </div>
     </div>
-  </main>
+  </div>
+</main>
 
-  <script>
-    /****************************************************
-     * MODELLO BASE
-     ****************************************************/
+<script>
+  /****************************************************
+   * COSTANTI & MODELLO BASE
+   ****************************************************/
+  const MAX_STACKS_PER_EFFECT = 5;
 
-    const VC_TYPES = {
-      SIMPLE: "simpleAttack",
-      AOE: "aoeAttack",
-      BUFF: "buff",
-      DEBUFF: "debuff",
-      UTILITY: "utility",
-      ULTI: "ultimate"
+  const VC_TYPES = {
+    SIMPLE: "simpleAttack",
+    AOE: "aoeAttack",
+    BUFF: "buff",
+    DEBUFF: "debuff",
+    UTILITY: "utility",
+    ULTI: "ultimate"
+  };
+
+  // Stato di gioco
+  const gameState = {
+    turn: 1,
+    phase: "idle",           // "draw", "play", "resolve", "enemy", "ended"
+    playerMana: 0,
+    playerManaMax: 7,
+    playerDeck: [],
+    playerDiscard: [],
+    playerHand: [],
+    pendingPlays: [],        // {card, sourceId, targetIds: [charId]}
+    playerTeam: [],
+    botTeam: [],
+    selectedCardId: null,
+    mustSelectTarget: false,
+    targetMode: null,        // "enemySingle", "allySingle", "allyAll", "enemyAll"
+    targetSide: null         // "player" | "bot"
+  };
+
+  /****************************************************
+   * FUNZIONI LOG
+   ****************************************************/
+  const logEl = document.getElementById("log");
+
+  function logLine(text, isTurnHeader = false) {
+    const div = document.createElement("div");
+    div.className = "log-line" + (isTurnHeader ? " log-turn" : "");
+    div.textContent = text;
+    logEl.appendChild(div);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  /****************************************************
+   * PERSONAGGI
+   ****************************************************/
+  function createCharacter(id, name, side, stats) {
+    return {
+      id,
+      name,
+      side, // "player" | "bot"
+      base: { ...stats },
+      current: { ...stats },
+      shield: 0,
+      buffs: [],    // array di { keyword, duration, data }
+      debuffs: [],  // array di { keyword, duration, data }
+      alive: true
     };
+  }
 
-    // Stato di gioco
-    const gameState = {
-      turn: 1,
-      phase: "idle",             // "draw", "play", "resolve", "enemy", "ended"
-      playerMana: 0,
-      playerManaMax: 7,
-      playerDeck: [],
-      playerDiscard: [],
-      playerHand: [],
-      pendingPlays: [],          // {card, sourceId, targetIds:[charId]}
-      playerTeam: [],
-      botTeam: [],
-      selectedCardId: null,
-      selectedTargets: [],
-      targetMode: null,          // "enemySingle", "allySingle", "allyAll", "enemyAll", null
-      mustSelectTarget: false,
-      targetSide: null           // "player" | "bot"
-    };
-
-    /****************************************************
-     * PERSONAGGI (sempre Basil / Gael / Zagrok vs Mordel / Kiddou / Rindu)
-     ****************************************************/
-
-    function createCharacter(id, name, side, stats) {
-      return {
-        id,
-        name,
-        side,              // "player" | "bot"
-        base: { ...stats },
-        current: { ...stats },
-        shield: 0,
-        buffs: [],         // [{keyword, duration, stacks, data}]
-        debuffs: [],       // idem
-        alive: true
-      };
-    }
-
-    function initTeams() {
-      gameState.playerTeam = [
-        createCharacter("basil", "Basil", "player", {
-          lp: 980, lpMax: 980, atk: 63, def: 27,
-          critChance: 60, critDmg: 120,
-          critResist: 22, critDef: 47
-        }),
-        createCharacter("gael", "Gael", "player", {
-          lp: 900, lpMax: 900, atk: 72, def: 11,
-          critChance: 30, critDmg: 150,
-          critResist: 10, critDef: 25
-        }),
-        createCharacter("zagrok", "Zagrok", "player", {
-          lp: 830, lpMax: 830, atk: 68, def: 13,
-          critChance: 30, critDmg: 150,
-          critResist: 30, critDef: 20
-        })
-      ];
-
-      gameState.botTeam = [
-        createCharacter("mordel", "Mordel", "bot", {
-          lp: 1020, lpMax: 1020, atk: 60, def: 32,
-          critChance: 25, critDmg: 150,
-          critResist: 25, critDef: 33
-        }),
-        createCharacter("kiddou", "Kiddou", "bot", {
-          lp: 820, lpMax: 820, atk: 58, def: 23,
-          critChance: 40, critDmg: 160,
-          critResist: 20, critDef: 26
-        }),
-        createCharacter("rindu", "Rindu", "bot", {
-          lp: 860, lpMax: 860, atk: 78, def: 28,
-          critChance: 28, critDmg: 150,
-          critResist: 20, critDef: 22
-        })
-      ];
-    }
-
-    /****************************************************
-     * CARTE (subset reale, il resto lo aggiungiamo dopo)
-     ****************************************************/
-
-    const allCards = [
-      // BASIL
-      {
-        id: "basil_base",
-        name: "Basil — Colpo di Scisto",
-        owner: "Basil",
-        cost: 1,
-        type: VC_TYPES.SIMPLE,
-        vc: 0.40,
-        target: "enemySingle",
-        desc: "Attacco singolo (VC 40%).",
-        effect: (source, targets) => {
-          const t = targets[0];
-          simpleAttack(source, t, 0.40);
-        }
-      },
-      {
-        id: "basil_muro",
-        name: "Basil — Muro di Scisti",
-        owner: "Basil",
-        cost: 2,
-        type: VC_TYPES.BUFF,
-        target: "allySingle",
-        desc: "Scudo 12% LPmax Basil +10 DEF (1 turno).",
-        effect: (source, targets) => {
-          const t = targets[0];
-          const shieldAmount = Math.round(source.current.lpMax * 0.12);
-          t.shield += shieldAmount;
-          addBuff(t, {
-            keyword: "Muro di Scisti",
-            duration: 1,
-            stacks: 1,
-            data: { defBonus: 10 }
-          });
-          t.current.def += 10;
-          logLine(`${t.name} ottiene uno scudo di ${shieldAmount} e +10 DEF (1 turno).`);
-        }
-      },
-      {
-        id: "basil_disgelo",
-        name: "Basil — Disgelo di Quarzo",
-        owner: "Basil",
-        cost: 3,
-        type: VC_TYPES.UTILITY,
-        target: "allyAll",
-        desc: "Tutti gli alleati: rimuovono 1 debuff e curano 30% LPmax Basil. Basil +30 LP(P).",
-        effect: (source, targets) => {
-          const heal = Math.round(source.current.lpMax * 0.30);
-          const allies = getTeam(source.side);
-          allies.forEach(ch => {
-            if (!ch.alive) return;
-            if (ch.debuffs.length > 0) {
-              ch.debuffs.shift();
-              logLine(`Debuff rimosso da ${ch.name}.`);
-            }
-            const healed = Math.min(ch.current.lp + heal, ch.current.lpMax) - ch.current.lp;
-            ch.current.lp += healed;
-            logLine(`${ch.name} cura ${healed} LP.`);
-          });
-          source.current.lpMax += 30;
-          source.current.lp += 30;
-          logLine(`${source.name} ottiene +30 LP(P).`);
-        }
-      },
-      {
-        id: "zagrok_ringiovanimento",
-        name: "Zagrok — Ringiovanimento",
-        owner: "Zagrok",
-        cost: 3,
-        type: VC_TYPES.BUFF,
-        target: "allyAll",
-        desc: "Ringiovanimento (2 turni): ogni inizio turno +12% LPmax e cura equivalente.",
-        effect: (source, targets) => {
-          const allies = getTeam(source.side);
-          allies.forEach(ch => {
-            if (!ch.alive) return;
-            addBuff(ch, {
-              keyword: "Ringiovanimento",
-              duration: 2,
-              stacks: 1,
-              data: { percentPerStack: 0.12 }
-            });
-            logLine(`${ch.name} ottiene Ringiovanimento (2 turni).`);
-          });
-        }
-      },
-      {
-        id: "mordel_zoccolo_ferita",
-        name: "Mordel — Ferita AOE",
-        owner: "Mordel",
-        cost: 3,
-        type: VC_TYPES.AOE,
-        target: "enemyAll",
-        desc: "AOE (VC 60%) + Ferita x1 (3 turni) a tutti i nemici.",
-        effect: (source, targets) => {
-          const enemies = getOpposingTeam(source.side);
-          enemies.forEach(t => {
-            if (!t.alive) return;
-            simpleAttack(source, t, 0.60);
-            addDebuff(t, {
-              keyword: "Ferita",
-              duration: 3,
-              stacks: 1,
-              data: {}
-            });
-            logLine(`${t.name} subisce Ferita x1 (3 turni).`);
-          });
-        }
-      },
-      {
-        id: "player_generic_attack",
-        name: "Gael — Colpo di Guardia",
-        owner: "Gael",
-        cost: 1,
-        type: VC_TYPES.SIMPLE,
-        target: "enemySingle",
-        vc: 0.55,
-        desc: "Attacco singolo (VC 55%).",
-        effect: (source, targets) => {
-          simpleAttack(source, targets[0], 0.55);
-        }
-      },
-      {
-        id: "zagrok_morso",
-        name: "Zagrok — Morso Virale",
-        owner: "Zagrok",
-        cost: 1,
-        type: VC_TYPES.SIMPLE,
-        target: "enemySingle",
-        vc: 0.60,
-        desc: "Attacco (VC 60%). Se infligge danno → +10 LP(P).",
-        effect: (source, targets) => {
-          const t = targets[0];
-          const dmg = simpleAttack(source, t, 0.60);
-          if (dmg > 0) {
-            source.current.lpMax += 10;
-            source.current.lp += 10;
-            logLine(`${source.name} guadagna +10 LP(P).`);
-          }
-        }
-      }
+  function initTeams() {
+    // ⭐ Player Team: Basil, Gael, Zagrok (esempio base)
+    gameState.playerTeam = [
+      createCharacter("basil", "Basil", "player", {
+        lp: 980, lpMax: 980,
+        atk: 63, def: 27,
+        critChance: 60, critDmg: 120,
+        critResist: 22, critDef: 47
+      }),
+      createCharacter("gael", "Gael", "player", {
+        lp: 900, lpMax: 900,
+        atk: 72, def: 11,
+        critChance: 30, critDmg: 150,
+        critResist: 10, critDef: 25
+      }),
+      createCharacter("zagrok", "Zagrok", "player", {
+        lp: 830, lpMax: 830,
+        atk: 68, def: 13,
+        critChance: 30, critDmg: 150,
+        critResist: 30, critDef: 20
+      })
     ];
 
-    function buildPlayerDeck() {
-      const baseIds = [
-        "basil_base",
-        "basil_muro",
-        "basil_disgelo",
-        "zagrok_ringiovanimento",
-        "mordel_zoccolo_ferita",
-        "player_generic_attack",
-        "zagrok_morso"
-      ];
-      const deck = [];
-      baseIds.forEach(id => {
-        const card = allCards.find(c => c.id === id);
-        if (!card) return;
-        deck.push({ ...card });
-        deck.push({ ...card });
-      });
-      return deck;
+    // ⭐ Bot Team: Mordel, Kiddou, Rindu (esempio)
+    gameState.botTeam = [
+      createCharacter("mordel", "Mordel", "bot", {
+        lp: 1020, lpMax: 1020,
+        atk: 60, def: 32,
+        critChance: 25, critDmg: 150,
+        critResist: 25, critDef: 33
+      }),
+      createCharacter("kiddou", "Kiddou", "bot", {
+        lp: 820, lpMax: 820,
+        atk: 58, def: 23,
+        critChance: 40, critDmg: 160,
+        critResist: 20, critDef: 26
+      }),
+      createCharacter("rindu", "Rindu", "bot", {
+        lp: 860, lpMax: 860,
+        atk: 78, def: 28,
+        critChance: 28, critDmg: 150,
+        critResist: 20, critDef: 22
+      })
+    ];
+
+    // Dionere esiste nel sistema ma per ora non è nel team base
+    // createCharacter("dionere", "Dionere", "player", {...})
+  }
+
+  function getTeam(side) {
+    return side === "player" ? gameState.playerTeam : gameState.botTeam;
+  }
+
+  function getOpposingTeam(side) {
+    return side === "player" ? gameState.botTeam : gameState.playerTeam;
+  }
+
+  function findCharById(id) {
+    return (
+      gameState.playerTeam.find(c => c.id === id) ||
+      gameState.botTeam.find(c => c.id === id)
+    );
+  }
+
+  /****************************************************
+   * BUFF/DEBUFF — SISTEMA GENERALE
+   ****************************************************/
+  function totalStacksOn(character, keyword, isBuff = false) {
+    const list = isBuff ? character.buffs : character.debuffs;
+    return list
+      .filter(e => e.keyword === keyword)
+      .reduce((sum, e) => sum + (e.data.stacks || 1), 0);
+  }
+
+  function addBuff(character, buff) {
+    const currStacks = totalStacksOn(character, buff.keyword, true);
+    const newStacks = buff.data && buff.data.stacks ? buff.data.stacks : 1;
+    const available = Math.max(0, MAX_STACKS_PER_EFFECT - currStacks);
+    if (available <= 0) {
+      logLine(`${character.name} ha già il massimo di stack per ${buff.keyword}.`);
+      return;
     }
+    const stacksToAdd = Math.min(available, newStacks);
+    const clone = {
+      keyword: buff.keyword,
+      duration: buff.duration,
+      data: { ...(buff.data || {}), stacks: stacksToAdd }
+    };
+    character.buffs.push(clone);
+  }
 
-    /****************************************************
-     * UTILITY: TEAM, LOG
-     ****************************************************/
-
-    function getTeam(side) {
-      return side === "player" ? gameState.playerTeam : gameState.botTeam;
+  function addDebuff(character, debuff) {
+    const currStacks = totalStacksOn(character, debuff.keyword, false);
+    const newStacks = debuff.data && debuff.data.stacks ? debuff.data.stacks : 1;
+    const available = Math.max(0, MAX_STACKS_PER_EFFECT - currStacks);
+    if (available <= 0) {
+      logLine(`${character.name} ha già il massimo di stack per ${debuff.keyword}.`);
+      return;
     }
+    const stacksToAdd = Math.min(available, newStacks);
+    const clone = {
+      keyword: debuff.keyword,
+      duration: debuff.duration,
+      data: { ...(debuff.data || {}), stacks: stacksToAdd }
+    };
+    character.debuffs.push(clone);
+  }
 
-    function getOpposingTeam(side) {
-      return side === "player" ? gameState.botTeam : gameState.playerTeam;
-    }
+  /****************************************************
+   * EFFETTI INIZIO TURNO (Ringiovanimento, ecc.)
+   ****************************************************/
+  function processStartOfTurnEffects() {
+    [...gameState.playerTeam, ...gameState.botTeam].forEach(ch => {
+      if (!ch.alive) return;
 
-    function findCharById(id) {
-      return (
-        gameState.playerTeam.find(c => c.id === id) ||
-        gameState.botTeam.find(c => c.id === id)
-      );
-    }
-
-    const logEl = document.getElementById("log");
-
-    function logLine(text, isTurnHeader = false) {
-      const div = document.createElement("div");
-      div.className = "log-line" + (isTurnHeader ? " log-turn" : "");
-      div.textContent = text;
-      logEl.appendChild(div);
-      logEl.scrollTop = logEl.scrollHeight;
-    }
-
-    /****************************************************
-     * BUFF / DEBUFF SYSTEM (visibili)
-     ****************************************************/
-
-    // Ogni buff/debuff:
-    // { keyword, duration, stacks, data }
-    // - Max 5 stack per keyword per personaggio
-    // - Statistiche (ATK(P), LP(P) ecc.) sono gestite a parte e NON contano come buff
-
-    function getStacks(list, keyword) {
-      return list
-        .filter(e => e.keyword === keyword)
-        .reduce((sum, e) => sum + (e.stacks || 1), 0);
-    }
-
-    function addBuff(character, buff) {
-      const currentStacks = getStacks(character.buffs, buff.keyword);
-      if (currentStacks >= 5) {
-        logLine(`${character.name} ha già 5 stack di ${buff.keyword}.`);
-        return;
-      }
-      const newStacks = buff.stacks || 1;
-      const allowed = Math.min(newStacks, 5 - currentStacks);
-      if (allowed <= 0) {
-        logLine(`${character.name} non può ottenere altri stack di ${buff.keyword}.`);
-        return;
-      }
-      const buffCopy = { ...buff, stacks: allowed };
-      character.buffs.push(buffCopy);
-    }
-
-    function addDebuff(character, debuff) {
-      const currentStacks = getStacks(character.debuffs, debuff.keyword);
-      if (currentStacks >= 5) {
-        logLine(`${character.name} ha già 5 stack di ${debuff.keyword}.`);
-        return;
-      }
-      const newStacks = debuff.stacks || 1;
-      const allowed = Math.min(newStacks, 5 - currentStacks);
-      if (allowed <= 0) {
-        logLine(`${character.name} non può ottenere altri stack di ${debuff.keyword}.`);
-        return;
-      }
-      const debuffCopy = { ...debuff, stacks: allowed };
-      character.debuffs.push(debuffCopy);
-    }
-
-    // Effetti di INIZIO TURNO (buff tipo Ringiovanimento)
-    function processStartOfTurnEffects() {
-      [...gameState.playerTeam, ...gameState.botTeam].forEach(ch => {
-        if (!ch.alive) return;
-
-        // Ringiovanimento: somma tutti gli stack attivi
-        const ringioBuffs = ch.buffs.filter(b => b.keyword === "Ringiovanimento");
-        if (ringioBuffs.length > 0) {
-          const totalStacks = ringioBuffs.reduce((s, b) => s + (b.stacks || 1), 0);
-          const percentPerStack = ringioBuffs[0].data.percentPerStack || 0.12;
-          const totalPercent = totalStacks * percentPerStack;
-          const gain = Math.floor(ch.current.lpMax * totalPercent);
-          if (gain > 0) {
-            ch.current.lpMax += gain;
-            ch.current.lp += gain;
-            logLine(`${ch.name} (Ringiovanimento x${totalStacks}): +${gain} LPmax e +${gain} LP.`);
-          }
-        }
-      });
-    }
-
-    // Effetti di FINE TURNO (Ferita, ecc.)
-    function processEndOfTurnEffects() {
-      [...gameState.playerTeam, ...gameState.botTeam].forEach(ch => {
-        if (!ch.alive) return;
-
-        // Ferita: 7% degli LP rimanenti per stack, consumando prima lo scudo
-        const ferite = ch.debuffs.filter(d => d.keyword === "Ferita");
-        if (ferite.length > 0) {
-          const totalStacks = ferite.reduce((s, d) => s + (d.stacks || 1), 0);
-          const percent = 0.07 * totalStacks;
-          let loss = Math.floor(ch.current.lp * percent);
-          if (loss > 0) {
-            let remaining = loss;
-            if (ch.shield > 0) {
-              const absorbed = Math.min(ch.shield, remaining);
-              ch.shield -= absorbed;
-              remaining -= absorbed;
-              logLine(`${ch.name} assorbe ${absorbed} danni da Ferita con lo Scudo.`);
-            }
-            if (remaining > 0) {
-              const actual = Math.min(ch.current.lp, remaining);
-              ch.current.lp -= actual;
-              logLine(`${ch.name} perde ${actual} LP per Ferita (${totalStacks} stack).`);
-              if (ch.current.lp <= 0) {
-                ch.alive = false;
-                logLine(`${ch.name} è caduto a causa di Ferita.`);
-              }
-            }
-          }
-        }
-      });
-    }
-
-    // Decrementa duration e rimuove buff/debuff scaduti
-    function tickDurations() {
-      [...gameState.playerTeam, ...gameState.botTeam].forEach(ch => {
-        if (!ch.alive) return;
-
-        ch.buffs.forEach(b => { b.duration -= 1; });
-        ch.debuffs.forEach(d => { d.duration -= 1; });
-
-        ch.buffs = ch.buffs.filter(b => {
-          if (b.duration > 0) return true;
-          if (b.keyword === "Muro di Scisti") {
-            ch.current.def -= (b.data.defBonus || 0);
-            logLine(`Il buff Muro di Scisti su ${ch.name} è terminato.`);
-          }
-          if (b.keyword === "Ringiovanimento") {
-            logLine(`Il buff Ringiovanimento su ${ch.name} è terminato.`);
-          }
-          if (b.keyword === "Predatore Sotterraneo") {
-            logLine(`Il buff Predatore Sotterraneo su ${ch.name} è terminato.`);
-          }
-          return false;
-        });
-
-        ch.debuffs = ch.debuffs.filter(d => {
-          if (d.duration > 0) return true;
-          logLine(`Il debuff ${d.keyword} su ${ch.name} è terminato.`);
-          return false;
-        });
-      });
-    }
-
-    /****************************************************
-     * COMBATTIMENTO (ancora senza critici veri)
-     ****************************************************/
-
-    function simpleAttack(source, target, vc) {
-      if (!source.alive || !target.alive) return 0;
-
-      // Danno base lordo
-      let raw = Math.round(source.current.atk * vc);
-
-      // Predatore Sotterraneo (buff) se il bersaglio ha Sotterramento
-      const hasSotterramento = getStacks(target.debuffs, "Sotterramento") > 0;
-      if (hasSotterramento) {
-        const predStacks = getStacks(source.buffs, "Predatore Sotterraneo");
-        if (predStacks > 0) {
-          const bonusMult = 1 + 0.15 * predStacks;
-          raw = Math.round(raw * bonusMult);
-          logLine(`${source.name} (Predatore Sotterraneo x${predStacks}) aumenta i danni a ${target.name}.`);
-        }
-      }
-
-      let remaining = raw;
-
-      // Prima lo scudo
-      if (target.shield > 0) {
-        const absorbed = Math.min(target.shield, remaining);
-        target.shield -= absorbed;
-        remaining -= absorbed;
-        logLine(`${target.name} assorbe ${absorbed} danni con lo Scudo.`);
-      }
-
-      if (remaining <= 0) {
-        logLine(`${source.name} colpisce ${target.name}, ma non infligge danni ai LP.`);
-        return 0;
-      }
-
-      const def = target.current.def;
-      const dmg = Math.max(0, remaining - def);
-      if (dmg <= 0) {
-        logLine(`${source.name} colpisce ${target.name}, ma la DIFESA blocca il colpo.`);
-        return 0;
-      }
-
-      target.current.lp = Math.max(0, target.current.lp - dmg);
-      logLine(`${source.name} infligge ${dmg} danni a ${target.name}.`);
-      if (target.current.lp <= 0) {
-        target.alive = false;
-        logLine(`${target.name} è stato sconfitto!`);
-      }
-      return dmg;
-    }
-
-    /****************************************************
-     * DECK, PESCA, SCARTI
-     ****************************************************/
-
-    function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-    }
-
-    function drawCards(n) {
-      for (let i = 0; i < n; i++) {
-        if (gameState.playerDeck.length === 0) {
-          if (gameState.playerDiscard.length > 0) {
-            gameState.playerDeck = gameState.playerDiscard.splice(0);
-            shuffle(gameState.playerDeck);
-            logLine("Il deck è finito, rimescolo gli scarti (tranne le Ulti).");
-          } else {
-            logLine("Il deck è vuoto e non ci sono scarti, non puoi pescare.");
-            break;
-          }
-        }
-        const card = gameState.playerDeck.shift();
-        gameState.playerHand.push(card);
-      }
-    }
-
-    /****************************************************
-     * TURNI & FASI
-     ****************************************************/
-
-    function startGame() {
-      initTeams();
-      gameState.playerDeck = buildPlayerDeck();
-      shuffle(gameState.playerDeck);
-      gameState.playerDiscard = [];
-      gameState.playerHand = [];
-      gameState.pendingPlays = [];
-      gameState.turn = 1;
-      gameState.playerManaMax = 7;
-      gameState.playerMana = 0;
-      gameState.phase = "draw";
-
-      logEl.innerHTML = "";
-      logLine("Inizio partita.");
-      // Mano iniziale: 7
-      drawCards(7);
-      startPlayerTurn();
-      render();
-    }
-
-    function startPlayerTurn() {
-      logLine("");
-      logLine(`— TURNO ${gameState.turn} — GIOCATORE`, true);
-
-      // Effetti di inizio turno (Ringiovanimento ecc.)
-      processStartOfTurnEffects();
-
-      // Fase pescata
-      gameState.phase = "draw";
-      drawCards(3);
-
-      // Mana pieno
-      gameState.playerMana = gameState.playerManaMax;
-
-      // Fase giocata
-      gameState.phase = "play";
-      gameState.pendingPlays = [];
-      updateUIPhase();
-      render();
-    }
-
-    function endPlayerTurnAndResolve() {
-      if (gameState.phase !== "play") return;
-      gameState.phase = "resolve";
-      updateUIPhase();
-
-      if (gameState.pendingPlays.length === 0) {
-        logLine("Nessuna carta da risolvere, passi il turno.");
-      } else {
-        gameState.pendingPlays.forEach(play => {
-          const { card, sourceId, targetIds } = play;
-          const source = findCharById(sourceId);
-          let targets = targetIds.map(id => findCharById(id)).filter(t => t && t.alive);
-
-          // AllyAll / EnemyAll vengono risolti guardando il side
-          if ((card.target === "allyAll" || card.target === "enemyAll") && targets.length === 0) {
-            const side = source.side;
-            if (card.target === "allyAll") {
-              targets = getTeam(side).filter(c => c.alive);
-            } else {
-              targets = getOpposingTeam(side).filter(c => c.alive);
-            }
-          }
-
-          if (!source || !source.alive) return;
-          logLine(`>> ${source.name} usa "${card.name}"`);
-          try {
-            card.effect(source, targets);
-          } catch (e) {
-            console.error(e);
-            logLine(`(Errore nell'effetto di ${card.name})`);
-          }
+      // Ringiovanimento:
+      const ringioBuffs = ch.buffs.filter(b => b.keyword === "Ringiovanimento");
+      if (ringioBuffs.length > 0) {
+        ringioBuffs.forEach(b => {
+          const percent = b.data.percent || 0.12;
+          const gain = Math.round(ch.current.lpMax * percent);
+          ch.current.lpMax += gain;
+          ch.current.lp += gain;
+          logLine(`${ch.name} (Ringiovanimento): +${gain} LPmax e +${gain} cura (permanenti).`);
         });
       }
+    });
+  }
 
-      gameState.pendingPlays = [];
-      document.getElementById("pendingPlaysList").textContent = "(nessuna)";
+  /****************************************************
+   * EFFETTI FINE TURNO (Ferita, ecc.)
+   ****************************************************/
+  function processEndOfTurnEffects() {
+    [...gameState.playerTeam, ...gameState.botTeam].forEach(ch => {
+      if (!ch.alive) return;
 
-      // Effetti di fine turno giocatore
-      processEndOfTurnEffects();
-      tickDurations();
-      render();
-
-      // Turno bot
-      setTimeout(startBotTurn, 400);
-    }
-
-    function startBotTurn() {
-      gameState.phase = "enemy";
-      updateUIPhase();
-      logLine("");
-      logLine(`— TURNO ${gameState.turn} — BOT`, true);
-
-      // Effetti di inizio turno (anche per bot)
-      processStartOfTurnEffects();
-
-      const aliveBot = gameState.botTeam.filter(c => c.alive);
-      const alivePlayer = gameState.playerTeam.filter(c => c.alive);
-      if (aliveBot.length === 0 || alivePlayer.length === 0) {
-        endGameCheck();
-        return;
-      }
-
-      const attacker = aliveBot[Math.floor(Math.random() * aliveBot.length)];
-      const target = alivePlayer[Math.floor(Math.random() * alivePlayer.length)];
-
-      logLine(`${attacker.name} attacca ${target.name} (bot base attack).`);
-      simpleAttack(attacker, target, 0.50);
-
-      // Fine turno bot
-      processEndOfTurnEffects();
-      tickDurations();
-      render();
-
-      if (endGameCheck()) return;
-
-      // Prossimo turno globale
-      gameState.turn += 1;
-      startPlayerTurn();
-    }
-
-    function endGameCheck() {
-      const playerAlive = gameState.playerTeam.some(c => c.alive);
-      const botAlive = gameState.botTeam.some(c => c.alive);
-      if (!playerAlive || !botAlive) {
-        logLine("");
-        if (playerAlive && !botAlive) {
-          logLine("HAI VINTO!", true);
-        } else if (!playerAlive && botAlive) {
-          logLine("HAI PERSO!", true);
+      // Ferita: 7% degli LP rimanenti per stack, consuma scudo prima, non uccide se <1 danno
+      const ferite = ch.debuffs.filter(d => d.keyword === "Ferita");
+      if (ferite.length > 0) {
+        let totalStacks = 0;
+        ferite.forEach(d => {
+          totalStacks += d.data.stacks || 1;
+        });
+        const percent = 0.07 * totalStacks;
+        let loss = Math.floor(ch.current.lp * percent); // floor per evitare morte da decimali
+        if (loss <= 0) {
+          logLine(`${ch.name} è affetto da Ferita, ma i danni sono trascurabili.`);
         } else {
-          logLine("PAREGGIO (tutti i PG sconfitti).", true);
+          // Consuma scudo prima
+          if (ch.shield > 0) {
+            const absorbed = Math.min(ch.shield, loss);
+            ch.shield -= absorbed;
+            loss -= absorbed;
+            logLine(`${ch.name} assorbe ${absorbed} danni da Ferita con lo scudo.`);
+          }
+          if (loss > 0) {
+            const old = ch.current.lp;
+            ch.current.lp = Math.max(0, ch.current.lp - loss);
+            logLine(`${ch.name} perde ${old - ch.current.lp} LP per Ferita (${totalStacks} stack).`);
+          }
         }
-        gameState.phase = "ended";
-        updateUIPhase();
-        return true;
       }
-      return false;
+    });
+  }
+
+  /****************************************************
+   * DURATA BUFF/DEBUFF
+   ****************************************************/
+  function tickDurations() {
+    [...gameState.playerTeam, ...gameState.botTeam].forEach(ch => {
+      if (!ch.alive) return;
+
+      ch.buffs.forEach(b => { b.duration -= 1; });
+      ch.debuffs.forEach(d => { d.duration -= 1; });
+
+      // Rimozione buff scaduti
+      ch.buffs = ch.buffs.filter(b => {
+        if (b.duration > 0) return true;
+        logLine(`Il buff ${b.keyword} su ${ch.name} è terminato.`);
+        return false;
+      });
+
+      // Rimozione debuff scaduti
+      ch.debuffs = ch.debuffs.filter(d => {
+        if (d.duration > 0) return true;
+        logLine(`Il debuff ${d.keyword} su ${ch.name} è terminato.`);
+        return false;
+      });
+    });
+  }
+
+  /****************************************************
+   * COMBATTIMENTO — DANNI BASE (senza crit per ora)
+   * (Crit & Rottura Critica li possiamo aggiungere dopo)
+   ****************************************************/
+  function getEffectiveDef(target) {
+    // DEF base + buff invisibili - Sotterramento
+    const baseDef = target.current.def;
+    const sotts = target.debuffs.filter(d => d.keyword === "Sotterramento");
+    let totalStacks = 0;
+    sotts.forEach(d => totalStacks += d.data.stacks || 1);
+    const malus = 5 * totalStacks;
+    return Math.max(0, baseDef - malus);
+  }
+
+  function hasPredatoreSotterraneo(source) {
+    return source.buffs.some(b => b.keyword === "Predatore Sotterraneo");
+  }
+
+  function predatoreStacks(source) {
+    return totalStacksOn(source, "Predatore Sotterraneo", true);
+  }
+
+  function rotturaCriticaStacks(target) {
+    return totalStacksOn(target, "Rottura Critica", false);
+  }
+
+  // Per ora: attacco semplice = ATK * VC - DEF (con Sotterramento)
+  function simpleAttack(source, target, vc) {
+    if (!source.alive || !target.alive) return 0;
+
+    const raw = Math.round(source.current.atk * vc);
+
+    // Scudo prima
+    let remaining = raw;
+    if (target.shield > 0) {
+      const absorbed = Math.min(target.shield, remaining);
+      target.shield -= absorbed;
+      remaining -= absorbed;
+      logLine(`${target.name} assorbe ${absorbed} danni con lo Scudo.`);
+    }
+    if (remaining <= 0) {
+      logLine(`${source.name} colpisce ${target.name}, ma non infligge danni ai LP.`);
+      return 0;
     }
 
-    /****************************************************
-     * CARTE & TARGET
-     ****************************************************/
+    let def = getEffectiveDef(target);
+    let dmg = Math.max(0, remaining - def);
 
-    function onCardClick(cardId) {
-      if (gameState.phase !== "play") return;
-      const card = gameState.playerHand.find(c => c.id === cardId);
-      if (!card) return;
-      if (card.cost > gameState.playerMana) {
-        alert("Mana insufficiente per giocare questa carta.");
-        return;
+    // Predatore Sotterraneo: +15% danni finali vs nemici con Sotterramento
+    const hasSott = totalStacksOn(target, "Sotterramento", false) > 0;
+    if (hasSott && hasPredatoreSotterraneo(source)) {
+      const stacksP = predatoreStacks(source);
+      const mult = 1 + 0.15 * stacksP;
+      dmg = Math.round(dmg * mult);
+    }
+
+    if (dmg <= 0) {
+      logLine(`${source.name} colpisce ${target.name}, ma la DIFESA blocca il colpo.`);
+      return 0;
+    }
+
+    target.current.lp = Math.max(0, target.current.lp - dmg);
+    logLine(`${source.name} infligge ${dmg} danni a ${target.name}.`);
+    if (target.current.lp <= 0) {
+      target.alive = false;
+      logLine(`${target.name} è stato sconfitto!`);
+    }
+    return dmg;
+  }
+
+  /****************************************************
+   * CARTE — DEFINIZIONI
+   * (molte complesse segnate come TODO per evitare errori)
+   ****************************************************/
+  const allCards = [
+    /* BASIL */
+    {
+      id: "basil_base",
+      name: "Basil — Colpo di Scisto",
+      owner: "Basil",
+      cost: 1,
+      type: VC_TYPES.SIMPLE,
+      target: "enemySingle",
+      vc: 0.40,
+      desc: "Attacco singolo (VC 40%).",
+      effect: (source, targets) => {
+        const t = targets[0];
+        simpleAttack(source, t, 0.40);
       }
-
-      gameState.playerMana -= card.cost;
-
-      const source = gameState.playerTeam.find(c => c.name === card.owner);
-      if (!source || !source.alive) {
-        alert("Il personaggio che dovrebbe usare questa carta non è disponibile.");
-        gameState.playerMana += card.cost;
-        return;
-      }
-
-      const targetType = card.target;
-      gameState.selectedCardId = card.id;
-      gameState.selectedTargets = [];
-      gameState.targetMode = targetType;
-
-      if (targetType === "allyAll" || targetType === "enemyAll") {
-        gameState.pendingPlays.push({
-          card,
-          sourceId: source.id,
-          targetIds: []
+    },
+    {
+      id: "basil_muro",
+      name: "Basil — Muro di Scisti",
+      owner: "Basil",
+      cost: 2,
+      type: VC_TYPES.BUFF,
+      target: "allySingle",
+      desc: "Scudo 12% LPmax Basil +10 DEF per 1 turno.",
+      effect: (source, targets) => {
+        const t = targets[0];
+        const shieldAmount = Math.round(source.current.lpMax * 0.12);
+        t.shield += shieldAmount;
+        addBuff(t, {
+          keyword: "Muro di Scisti",
+          duration: 1,
+          data: { defBonus: 10 }
         });
-        logLine(`Hai messo in coda "${card.name}" (bersaglio: ${targetType}).`);
-        moveCardFromHandToDiscard(card.id);
-        updatePendingListUI();
-        render();
-      } else {
-        gameState.mustSelectTarget = true;
-        gameState.targetSide = (targetType === "allySingle" ? "player" : "bot");
-        logLine(`Seleziona il bersaglio per "${card.name}".`);
+        t.current.def += 10;
+        logLine(`${t.name} ottiene uno scudo di ${shieldAmount} e +10 DEF (1 turno).`);
       }
+    },
+    {
+      id: "basil_disgelo",
+      name: "Basil — Disgelo di Quarzo",
+      owner: "Basil",
+      cost: 3,
+      type: VC_TYPES.UTILITY,
+      target: "allyAll",
+      desc: "Tutti gli alleati rimuovono 1 debuff e curano il 30% degli LPmax di Basil. Basil +30 LP(P).",
+      effect: (source, targets) => {
+        const heal = Math.round(source.current.lpMax * 0.30);
+        const allies = getTeam(source.side);
+        allies.forEach(ch => {
+          if (!ch.alive) return;
+          if (ch.debuffs.length > 0) {
+            ch.debuffs.shift();
+            logLine(`Debuff rimosso da ${ch.name}.`);
+          }
+          const newLp = Math.min(ch.current.lp + heal, ch.current.lpMax);
+          logLine(`${ch.name} cura ${newLp - ch.current.lp} LP.`);
+          ch.current.lp = newLp;
+        });
+        source.current.lpMax += 30;
+        source.current.lp += 30;
+        logLine(`Basil ottiene +30 LP(P).`);
+      }
+    },
+    {
+      id: "basil_zoccolo",
+      name: "Basil — Zoccolo Tellurico",
+      owner: "Basil",
+      cost: 3,
+      type: VC_TYPES.AOE,
+      target: "enemyAll",
+      vc: 0.70,
+      desc: "AOE VC 70%. Applica Ferita x1 (3 turni) a tutti i nemici.",
+      effect: (source, targets) => {
+        const enemies = getOpposingTeam(source.side);
+        enemies.forEach(t => {
+          if (!t.alive) return;
+          simpleAttack(source, t, 0.70);
+          addDebuff(t, {
+            keyword: "Ferita",
+            duration: 3,
+            data: { stacks: 1 }
+          });
+          logLine(`${t.name} ottiene Ferita x1 (3 turni).`);
+        });
+      }
+    },
 
+    /* GAEL */
+    {
+      id: "gael_base",
+      name: "Gael — Colpo di Guardia",
+      owner: "Gael",
+      cost: 1,
+      type: VC_TYPES.SIMPLE,
+      target: "enemySingle",
+      vc: 0.55,
+      desc: "Attacco singolo (VC 55%).",
+      effect: (source, targets) => {
+        simpleAttack(source, targets[0], 0.55);
+      }
+    },
+    {
+      id: "gael_resistenza",
+      name: "Gael — Resistenza Ferrea",
+      owner: "Gael",
+      cost: 2,
+      type: VC_TYPES.BUFF,
+      target: "allySingle",
+      desc: "+25% DEF per 2 turni (solo Gael per ora).",
+      effect: (source, targets) => {
+        // Per semplicità: applicata sempre su Gael stesso
+        const bonus = Math.round(source.base.def * 0.25);
+        source.current.def += bonus;
+        addBuff(source, {
+          keyword: "Resistenza Ferrea",
+          duration: 2,
+          data: { defBonus: bonus }
+        });
+        logLine(`Gael ottiene +${bonus} DEF per 2 turni.`);
+      }
+    },
+    {
+      id: "gael_sfida",
+      name: "Gael — Sfida del Guardiano",
+      owner: "Gael",
+      cost: 3,
+      type: VC_TYPES.BUFF,
+      target: "allyAll",
+      desc: "TODO: Controattacco 35% ATK quando colpiscono gli alleati.",
+      effect: (source, targets) => {
+        logLine(`[TODO] Sfida del Guardiano non è ancora implementata nel motore, solo segnata.`);
+      }
+    },
+    {
+      id: "gael_lama",
+      name: "Gael — Lama Risoluta",
+      owner: "Gael",
+      cost: 2,
+      type: VC_TYPES.SIMPLE,
+      target: "enemySingle",
+      vc: 0.80,
+      desc: "VC 80%. Se infligge danno → rimuove 1 buff visibile.",
+      effect: (source, targets) => {
+        const t = targets[0];
+        const dmg = simpleAttack(source, t, 0.80);
+        if (dmg > 0 && t.buffs.length > 0) {
+          // rimuove il primo buff
+          const removed = t.buffs.shift();
+          logLine(`Lama Risoluta rimuove il buff ${removed.keyword} da ${t.name}.`);
+        }
+      }
+    },
+
+    /* KIDDOU */
+    {
+      id: "kiddou_base",
+      name: "Kiddou — Colpo Risolutivo",
+      owner: "Kiddou",
+      cost: 1,
+      type: VC_TYPES.SIMPLE,
+      target: "enemySingle",
+      vc: 0.45,
+      desc: "Attacco singolo (VC 45%).",
+      effect: (source, targets) => {
+        simpleAttack(source, targets[0], 0.45);
+      }
+    },
+    {
+      id: "kiddou_benedizione",
+      name: "Kiddou — Benedizione Infinita",
+      owner: "Kiddou",
+      cost: 2,
+      type: VC_TYPES.BUFF,
+      target: "allyAll",
+      desc: "Alleati: +8% CritChance (1 turno). Kiddou: +5 DEF(P). [solo stats invisibili].",
+      effect: (source, targets) => {
+        const allies = getTeam(source.side);
+        allies.forEach(ch => {
+          if (!ch.alive) return;
+          // buff invisibile: aumentiamo direttamente le stats
+          const bonus = Math.round(ch.base.critChance * 0.08);
+          ch.current.critChance += bonus;
+          addBuff(ch, {
+            keyword: "Buff CritChance (invisibile)",
+            duration: 1,
+            data: { critBonus: bonus }
+          });
+          logLine(`${ch.name} ottiene +${bonus}% CritChance (1 turno).`);
+        });
+        source.current.def += 5;
+        logLine(`Kiddou ottiene +5 CritDef(P). (Gestito come DEF generica per ora)`);
+      }
+    },
+    {
+      id: "kiddou_marchio",
+      name: "Kiddou — Marchio del Collasso",
+      owner: "Kiddou",
+      cost: 3,
+      type: VC_TYPES.DEBUFF,
+      target: "enemySingle",
+      desc: "Applica Rottura Critica x1 (2 turni).",
+      effect: (source, targets) => {
+        const t = targets[0];
+        addDebuff(t, {
+          keyword: "Rottura Critica",
+          duration: 2,
+          data: { stacks: 1 }
+        });
+        logLine(`${t.name} ottiene Rottura Critica x1 (2 turni).`);
+      }
+    },
+
+    /* ZAGROK */
+    {
+      id: "zagrok_morso",
+      name: "Zagrok — Morso Virale",
+      owner: "Zagrok",
+      cost: 1,
+      type: VC_TYPES.SIMPLE,
+      target: "enemySingle",
+      vc: 0.60,
+      desc: "Attacco (VC 60%). Se infligge danno → +10 LP(P).",
+      effect: (source, targets) => {
+        const t = targets[0];
+        const dmg = simpleAttack(source, t, 0.60);
+        if (dmg > 0) {
+          source.current.lpMax += 10;
+          source.current.lp += 10;
+          logLine(`${source.name} guadagna +10 LP(P).`);
+        }
+      }
+    },
+    {
+      id: "zagrok_ringiovanimento",
+      name: "Zagrok — Ringiovanimento",
+      owner: "Zagrok",
+      cost: 3,
+      type: VC_TYPES.BUFF,
+      target: "allyAll",
+      desc: "Ringiovanimento (2 turni): all’inizio di OGNI turno → +12% LPmax e cura equivalente.",
+      effect: (source, targets) => {
+        const allies = getTeam(source.side);
+        allies.forEach(ch => {
+          if (!ch.alive) return;
+          addBuff(ch, {
+            keyword: "Ringiovanimento",
+            duration: 2,
+            data: { percent: 0.12, stacks: 1 }
+          });
+          logLine(`${ch.name} ottiene Ringiovanimento (2 turni).`);
+        });
+      }
+    },
+    {
+      id: "zagrok_espansione",
+      name: "Zagrok — Espansione Pandemica",
+      owner: "Zagrok",
+      cost: 3,
+      type: VC_TYPES.BUFF,
+      target: "allyAll",
+      desc: "Alleati: +8 ATK (1 turno). Zagrok: +12% LPmax(P).",
+      effect: (source, targets) => {
+        const allies = getTeam(source.side);
+        allies.forEach(ch => {
+          if (!ch.alive) return;
+          ch.current.atk += 8;
+          addBuff(ch, {
+            keyword: "Buff ATK temporaneo",
+            duration: 1,
+            data: { atkBonus: 8 }
+          });
+          logLine(`${ch.name} ottiene +8 ATK (1 turno).`);
+        });
+        const gain = Math.round(source.current.lpMax * 0.12);
+        source.current.lpMax += gain;
+        source.current.lp += gain;
+        logLine(`Zagrok ottiene +${gain} LPmax(P) e viene curato di ${gain}.`);
+      }
+    },
+
+    /* MORDEL */
+    {
+      id: "mordel_base_ferita",
+      name: "Mordel — AOE Ferita",
+      owner: "Mordel",
+      cost: 3,
+      type: VC_TYPES.AOE,
+      target: "enemyAll",
+      vc: 0.60,
+      desc: "AOE VC 60% + Ferita x1 (3 turni) a tutti i nemici.",
+      effect: (source, targets) => {
+        const enemies = getOpposingTeam(source.side);
+        enemies.forEach(t => {
+          if (!t.alive) return;
+          simpleAttack(source, t, 0.60);
+          addDebuff(t, {
+            keyword: "Ferita",
+            duration: 3,
+            data: { stacks: 1 }
+          });
+          logLine(`${t.name} ottiene Ferita x1 (3 turni).`);
+        });
+      }
+    },
+    {
+      id: "mordel_sepoltura",
+      name: "Mordel — Sepoltura Lenta",
+      owner: "Mordel",
+      cost: 2,
+      type: VC_TYPES.SIMPLE,
+      target: "enemySingle",
+      vc: 0.50,
+      desc: "VC 50%. Se infligge danno → applica 2 stack Sotterramento (3 turni).",
+      effect: (source, targets) => {
+        const t = targets[0];
+        const dmg = simpleAttack(source, t, 0.50);
+        if (dmg > 0) {
+          addDebuff(t, {
+            keyword: "Sotterramento",
+            duration: 3,
+            data: { stacks: 2 }
+          });
+          logLine(`${t.name} ottiene Sotterramento x2 (3 turni).`);
+        }
+      }
+    },
+    {
+      id: "mordel_abisso",
+      name: "Mordel — Abisso Silente",
+      owner: "Mordel",
+      cost: 3,
+      type: VC_TYPES.BUFF,
+      target: "allyAll",
+      desc: "Alleati (2 turni): Predatore Sotterraneo (+15% danni finali contro nemici con Sotterramento).",
+      effect: (source, targets) => {
+        const allies = getTeam(source.side);
+        allies.forEach(ch => {
+          if (!ch.alive) return;
+          addBuff(ch, {
+            keyword: "Predatore Sotterraneo",
+            duration: 2,
+            data: { stacks: 1 }
+          });
+          logLine(`${ch.name} ottiene Predatore Sotterraneo (2 turni).`);
+        });
+      }
+    },
+
+    /* RINDU — base di esempio */
+    {
+      id: "rindu_base",
+      name: "Rindu — Colpo Crescente",
+      owner: "Rindu",
+      cost: 1,
+      type: VC_TYPES.SIMPLE,
+      target: "enemySingle",
+      vc: 0.45,
+      desc: "VC 45%. Se infligge danno → attiva la sua passiva (TODO).",
+      effect: (source, targets) => {
+        const t = targets[0];
+        const dmg = simpleAttack(source, t, 0.45);
+        if (dmg > 0) {
+          logLine(`[TODO] Attivazione passiva di Rindu non ancora implementata nel motore.`);
+        }
+      }
+    },
+
+    /* DIONERE — placeholder */
+    {
+      id: "dionere_assalto",
+      name: "Dionere — Assalto Instabile",
+      owner: "Dionere",
+      cost: 1,
+      type: VC_TYPES.SIMPLE,
+      target: "enemySingle",
+      vc: 0.45,
+      desc: "VC 45%. +20% danni finali se sotto il 50% LP. (TODO).",
+      effect: (source, targets) => {
+        logLine(`[TODO] Effetto di Assalto Instabile non ancora implementato nel motore.`);
+      }
+    }
+  ];
+
+  /****************************************************
+   * DECK DEL PLAYER (per ora: 2 copie di alcune carte)
+   ****************************************************/
+  function buildPlayerDeck() {
+    const baseIds = [
+      "basil_base",
+      "basil_muro",
+      "basil_disgelo",
+      "basil_zoccolo",
+      "gael_base",
+      "gael_resistenza",
+      "zagrok_morso",
+      "zagrok_ringiovanimento",
+      "zagrok_espansione",
+      "mordel_base_ferita"
+    ];
+    const deck = [];
+    baseIds.forEach(id => {
+      const card = allCards.find(c => c.id === id);
+      if (!card) return;
+      deck.push({ ...card });
+      deck.push({ ...card });
+    });
+    return deck;
+  }
+
+  /****************************************************
+   * DECK, PESCA, SCARTI, RESHUFFLE
+   ****************************************************/
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  function drawCards(n) {
+    for (let i = 0; i < n; i++) {
+      if (gameState.playerDeck.length === 0) {
+        if (gameState.playerDiscard.length > 0) {
+          gameState.playerDeck = gameState.playerDiscard.splice(0);
+          shuffle(gameState.playerDeck);
+          logLine("Il deck è finito, rimescolo gli scarti (tranne le Ulti future).");
+        } else {
+          logLine("Il deck è vuoto e non ci sono scarti, non puoi pescare.");
+          break;
+        }
+      }
+      const card = gameState.playerDeck.shift();
+      gameState.playerHand.push(card);
+    }
+  }
+
+  /****************************************************
+   * TURNI & FASI
+   ****************************************************/
+  function startGame() {
+    initTeams();
+    gameState.playerDeck = buildPlayerDeck();
+    shuffle(gameState.playerDeck);
+    gameState.playerDiscard = [];
+    gameState.playerHand = [];
+    gameState.pendingPlays = [];
+    gameState.turn = 1;
+    gameState.playerManaMax = 7;
+    gameState.playerMana = 0;
+    gameState.phase = "draw";
+
+    logEl.innerHTML = "";
+    logLine("Inizio partita.");
+    drawCards(7);    // mano iniziale
+    startPlayerTurn();
+    render();
+  }
+
+  function startPlayerTurn() {
+    logLine("");
+    logLine(`— TURNO ${gameState.turn} — GIOCATORE`, true);
+
+    // Effetti inizio turno (Ringiovanimento, ecc.)
+    processStartOfTurnEffects();
+
+    // Fase pescata
+    gameState.phase = "draw";
+    drawCards(3);
+
+    // Mana pieno
+    gameState.playerMana = gameState.playerManaMax;
+    gameState.phase = "play";
+    gameState.pendingPlays = [];
+    updateUIPhase();
+    render();
+  }
+
+  function endPlayerTurnAndResolve() {
+    if (gameState.phase !== "play") return;
+    gameState.phase = "resolve";
+    updateUIPhase();
+
+    if (gameState.pendingPlays.length === 0) {
+      logLine("Nessuna carta da risolvere, passi il turno.");
+    } else {
+      gameState.pendingPlays.forEach(play => {
+        const { card, sourceId, targetIds } = play;
+        const source = findCharById(sourceId);
+        let targets;
+        if (card.target === "allyAll") {
+          targets = getTeam(source.side).filter(t => t.alive);
+        } else if (card.target === "enemyAll") {
+          targets = getOpposingTeam(source.side).filter(t => t.alive);
+        } else {
+          targets = (targetIds || []).map(id => findCharById(id)).filter(t => t && t.alive);
+        }
+
+        if (!source || !source.alive) return;
+        logLine(`>> ${source.name} usa "${card.name}"`);
+        try {
+          card.effect(source, targets);
+        } catch (e) {
+          console.error(e);
+          logLine(`(Errore nell'effetto di ${card.name})`);
+        }
+      });
+    }
+
+    gameState.pendingPlays = [];
+    document.getElementById("pendingPlaysList").textContent = "(nessuna)";
+
+    // Fine turno giocatore: debuff tipo Ferita + tick durata
+    processEndOfTurnEffects();
+    tickDurations();
+    render();
+
+    setTimeout(startBotTurn, 300);
+  }
+
+  function startBotTurn() {
+    gameState.phase = "enemy";
+    updateUIPhase();
+    logLine("");
+    logLine(`— TURNO ${gameState.turn} — BOT`, true);
+
+    // Effetti inizio turno (per il bot, inclusi i tuoi buff tipo Ringiovanimento)
+    processStartOfTurnEffects();
+
+    const aliveBot = gameState.botTeam.filter(c => c.alive);
+    const alivePlayer = gameState.playerTeam.filter(c => c.alive);
+    if (aliveBot.length === 0 || alivePlayer.length === 0) {
+      endGameCheck();
+      return;
+    }
+
+    const attacker = aliveBot[Math.floor(Math.random() * aliveBot.length)];
+    const target = alivePlayer[Math.floor(Math.random() * alivePlayer.length)];
+
+    logLine(`${attacker.name} attacca ${target.name} (bot base attack).`);
+    simpleAttack(attacker, target, 0.50);
+
+    // Fine turno bot
+    processEndOfTurnEffects();
+    tickDurations();
+    render();
+
+    if (endGameCheck()) return;
+
+    gameState.turn += 1;
+    startPlayerTurn();
+  }
+
+  function endGameCheck() {
+    const playerAlive = gameState.playerTeam.some(c => c.alive);
+    const botAlive = gameState.botTeam.some(c => c.alive);
+    if (!playerAlive || !botAlive) {
+      logLine("");
+      if (playerAlive && !botAlive) {
+        logLine("HAI VINTO!", true);
+      } else if (!playerAlive && botAlive) {
+        logLine("HAI PERSO!", true);
+      } else {
+        logLine("PAREGGIO (tutti i PG sconfitti).", true);
+      }
+      gameState.phase = "ended";
+      updateUIPhase();
+      return true;
+    }
+    return false;
+  }
+
+  /****************************************************
+   * GIOCO CARTE & SELEZIONE BERSAGLIO
+   ****************************************************/
+  function onCardClick(cardId) {
+    if (gameState.phase !== "play") return;
+    const card = gameState.playerHand.find(c => c.id === cardId);
+    if (!card) return;
+    if (card.cost > gameState.playerMana) {
+      alert("Mana insufficiente per giocare questa carta.");
+      return;
+    }
+
+    const source = gameState.playerTeam.find(c => c.name === card.owner);
+    if (!source || !source.alive) {
+      alert("Il personaggio che dovrebbe usare questa carta non è disponibile.");
+      return;
+    }
+
+    // scala mana e prepara target
+    gameState.playerMana -= card.cost;
+    gameState.selectedCardId = card.id;
+    gameState.targetMode = card.target;
+    gameState.mustSelectTarget = false;
+    gameState.targetSide = null;
+
+    if (card.target === "allyAll" || card.target === "enemyAll") {
+      gameState.pendingPlays.push({
+        card,
+        sourceId: source.id,
+        targetIds: []
+      });
+      moveCardFromHandToDiscard(card.id);
+      logLine(`Hai messo in coda "${card.name}" (AOE).`);
+      updatePendingListUI();
+      document.getElementById("btnResolve").disabled = false;
+      document.getElementById("btnResetTurn").disabled = false;
+      render();
+    } else {
+      // single target
+      gameState.mustSelectTarget = true;
+      gameState.targetSide = (card.target === "allySingle" ? "player" : "bot");
+      logLine(`Seleziona il bersaglio per "${card.name}".`);
       document.getElementById("btnResolve").disabled = false;
       document.getElementById("btnResetTurn").disabled = false;
       render();
     }
+  }
 
-    function moveCardFromHandToDiscard(cardId) {
-      const idx = gameState.playerHand.findIndex(c => c.id === cardId);
-      if (idx >= 0) {
-        const [card] = gameState.playerHand.splice(idx, 1);
-        gameState.playerDiscard.push(card);
-      }
+  function moveCardFromHandToDiscard(cardId) {
+    const idx = gameState.playerHand.findIndex(c => c.id === cardId);
+    if (idx >= 0) {
+      const [card] = gameState.playerHand.splice(idx, 1);
+      // quando avremo le Ulti vere, potremo evitarne lo scarto
+      gameState.playerDiscard.push(card);
+    }
+  }
+
+  function onCharacterClick(charId, side) {
+    if (!gameState.mustSelectTarget) return;
+    if (gameState.targetSide !== side) {
+      alert("Questa carta può essere usata solo sul lato corretto.");
+      return;
     }
 
-    function onCharacterClick(charId, side) {
-      if (!gameState.mustSelectTarget) return;
-      if (gameState.targetSide !== side) {
-        alert("Questa carta può essere usata solo sul lato corretto.");
-        return;
-      }
-      const card = allCards.find(c => c.id === gameState.selectedCardId);
-      if (!card) return;
+    const card = allCards.find(c => c.id === gameState.selectedCardId);
+    if (!card) return;
 
-      const source = gameState.playerTeam.find(c => c.name === card.owner);
-      if (!source || !source.alive) {
-        alert("Sorgente non valida.");
-        return;
-      }
-
-      gameState.pendingPlays.push({
-        card,
-        sourceId: source.id,
-        targetIds: [charId]
-      });
-      logLine(`Hai messo in coda "${card.name}" su ${findCharById(charId).name}.`);
-
-      moveCardFromHandToDiscard(card.id);
-
-      gameState.selectedCardId = null;
-      gameState.selectedTargets = [];
-      gameState.mustSelectTarget = false;
-      gameState.targetMode = null;
-      gameState.targetSide = null;
-
-      updatePendingListUI();
-      render();
+    const source = gameState.playerTeam.find(c => c.name === card.owner);
+    if (!source || !source.alive) {
+      alert("Sorgente non valida.");
+      return;
     }
 
-    function updatePendingListUI() {
-      const el = document.getElementById("pendingPlaysList");
-      if (gameState.pendingPlays.length === 0) {
-        el.textContent = "(nessuna)";
-        return;
-      }
-      el.textContent = gameState.pendingPlays
-        .map((p, idx) => {
-          const cardName = p.card.name;
-          let targetsText = "";
-          if (p.card.target === "allyAll") targetsText = "→ tutti alleati";
-          else if (p.card.target === "enemyAll") targetsText = "→ tutti nemici";
-          else if (p.targetIds && p.targetIds.length > 0) {
-            targetsText = "→ " + p.targetIds.map(id => findCharById(id).name).join(", ");
-          }
-          return `${idx + 1}) ${cardName} ${targetsText}`;
-        })
-        .join("\n");
-    }
-
-    function resetTurnSelection() {
-      if (gameState.phase !== "play") return;
-      let manaRefund = 0;
-      gameState.pendingPlays.forEach(p => {
-        manaRefund += p.card.cost;
-        gameState.playerHand.push(p.card);
-        const idx = gameState.playerDiscard.findIndex(c => c.id === p.card.id);
-        if (idx >= 0) gameState.playerDiscard.splice(idx, 1);
-      });
-      gameState.playerMana += manaRefund;
-      gameState.pendingPlays = [];
-      gameState.selectedCardId = null;
-      gameState.selectedTargets = [];
-      gameState.mustSelectTarget = false;
-      gameState.targetMode = null;
-      gameState.targetSide = null;
-      document.getElementById("pendingPlaysList").textContent = "(nessuna)";
-      logLine("Selezione del turno resettata.");
-      document.getElementById("btnResolve").disabled = true;
-      document.getElementById("btnResetTurn").disabled = true;
-      render();
-    }
-
-    /****************************************************
-     * RENDER UI
-     ****************************************************/
-
-    function render() {
-      document.getElementById("turnNumber").textContent = gameState.turn;
-      document.getElementById("playerMana").textContent = gameState.playerMana;
-      document.getElementById("deckCount").textContent = gameState.playerDeck.length;
-      document.getElementById("discardCount").textContent = gameState.playerDiscard.length;
-
-      renderTeam("playerTeam", gameState.playerTeam);
-      renderTeam("botTeam", gameState.botTeam, true);
-      renderHand();
-    }
-
-    function renderTeam(containerId, team, isEnemy = false) {
-      const container = document.getElementById(containerId);
-      container.innerHTML = "";
-      team.forEach(ch => {
-        const div = document.createElement("div");
-        div.className = "char-card" + (isEnemy ? " enemy" : "");
-
-        const name = document.createElement("div");
-        name.className = "char-name";
-        name.textContent = ch.name + (ch.alive ? "" : " (KO)");
-        div.appendChild(name);
-
-        const hpBar = document.createElement("div");
-        hpBar.className = "hp-bar";
-        const hpFill = document.createElement("div");
-        hpFill.className = "hp-fill";
-        const ratio = ch.current.lp / ch.current.lpMax;
-        hpFill.style.width = (Math.max(0, Math.min(1, ratio)) * 100) + "%";
-        hpBar.appendChild(hpFill);
-        div.appendChild(hpBar);
-
-        const stat = document.createElement("div");
-        stat.className = "stat-line";
-        stat.innerHTML =
-          `LP: ${ch.current.lp}/${ch.current.lpMax}` +
-          ` — ATK: ${ch.current.atk} — DEF: ${ch.current.def}` +
-          `<br/>Scudo: ${ch.shield}`;
-        div.appendChild(stat);
-
-        if (ch.buffs.length > 0) {
-          const buffs = document.createElement("div");
-          buffs.className = "buff-tags";
-          ch.buffs.forEach(b => {
-            const t = document.createElement("span");
-            t.className = "tag buff";
-            const stacks = b.stacks || 1;
-            t.textContent = `${b.keyword}${stacks > 1 ? " x" + stacks : ""} (${b.duration})`;
-            buffs.appendChild(t);
-          });
-          div.appendChild(buffs);
-        }
-        if (ch.debuffs.length > 0) {
-          const debuffs = document.createElement("div");
-          debuffs.className = "debuff-tags";
-          ch.debuffs.forEach(d => {
-            const t = document.createElement("span");
-            t.className = "tag debuff";
-            const stacks = d.stacks || 1;
-            t.textContent = `${d.keyword}${stacks > 1 ? " x" + stacks : ""} (${d.duration})`;
-            debuffs.appendChild(t);
-          });
-          div.appendChild(debuffs);
-        }
-
-        div.addEventListener("click", () => onCharacterClick(ch.id, ch.side));
-        container.appendChild(div);
-      });
-    }
-
-    function renderHand() {
-      const handEl = document.getElementById("playerHand");
-      handEl.innerHTML = "";
-      gameState.playerHand.forEach(card => {
-        const btn = document.createElement("button");
-        btn.className = "card-btn player";
-        btn.addEventListener("click", () => onCardClick(card.id));
-
-        const name = document.createElement("div");
-        name.className = "card-name";
-        name.textContent = card.name;
-        btn.appendChild(name);
-
-        const owner = document.createElement("div");
-        owner.className = "card-owner";
-        owner.textContent = `PG: ${card.owner}`;
-        btn.appendChild(owner);
-
-        const cost = document.createElement("div");
-        cost.className = "card-cost";
-        cost.textContent = card.cost;
-        btn.appendChild(cost);
-
-        const desc = document.createElement("div");
-        desc.className = "card-desc";
-        desc.textContent = card.desc;
-        btn.appendChild(desc);
-
-        handEl.appendChild(btn);
-      });
-    }
-
-    function updateUIPhase() {
-      const phaseLabel = document.getElementById("phaseLabel");
-      let text = "";
-      switch (gameState.phase) {
-        case "draw": text = "Pescata"; break;
-        case "play": text = "Giocata carte"; break;
-        case "resolve": text = "Risoluzione carte"; break;
-        case "enemy": text = "Turno del Bot"; break;
-        case "ended": text = "Partita terminata"; break;
-        default: text = "-";
-      }
-      phaseLabel.textContent = text;
-    }
-
-    /****************************************************
-     * EVENTI
-     ****************************************************/
-
-    document.getElementById("btnResolve").addEventListener("click", () => {
-      endPlayerTurnAndResolve();
-      document.getElementById("btnResolve").disabled = true;
-      document.getElementById("btnResetTurn").disabled = true;
+    gameState.pendingPlays.push({
+      card,
+      sourceId: source.id,
+      targetIds: [charId]
     });
+    moveCardFromHandToDiscard(card.id);
+    logLine(`Hai messo in coda "${card.name}" su ${findCharById(charId).name}.`);
 
-    document.getElementById("btnResetTurn").addEventListener("click", () => {
-      resetTurnSelection();
+    // reset selezione
+    gameState.selectedCardId = null;
+    gameState.mustSelectTarget = false;
+    gameState.targetMode = null;
+    gameState.targetSide = null;
+
+    updatePendingListUI();
+    render();
+  }
+
+  function updatePendingListUI() {
+    const el = document.getElementById("pendingPlaysList");
+    if (gameState.pendingPlays.length === 0) {
+      el.textContent = "(nessuna)";
+      return;
+    }
+    el.textContent = gameState.pendingPlays
+      .map((p, idx) => {
+        const cardName = p.card.name;
+        let targetsText = "";
+        if (p.card.target === "allyAll") targetsText = "→ tutti alleati";
+        else if (p.card.target === "enemyAll") targetsText = "→ tutti nemici";
+        else if (p.targetIds && p.targetIds.length > 0) {
+          targetsText = "→ " + p.targetIds.map(id => findCharById(id).name).join(", ");
+        }
+        return `${idx + 1}) ${cardName} ${targetsText}`;
+      })
+      .join("\n");
+  }
+
+  function resetTurnSelection() {
+    if (gameState.phase !== "play") return;
+    let manaRefund = 0;
+    gameState.pendingPlays.forEach(p => {
+      manaRefund += p.card.cost;
+      gameState.playerHand.push(p.card);
+      const idx = gameState.playerDiscard.findIndex(c => c.id === p.card.id);
+      if (idx >= 0) gameState.playerDiscard.splice(idx, 1);
     });
+    gameState.playerMana += manaRefund;
+    gameState.pendingPlays = [];
+    gameState.selectedCardId = null;
+    gameState.mustSelectTarget = false;
+    gameState.targetMode = null;
+    gameState.targetSide = null;
+    document.getElementById("pendingPlaysList").textContent = "(nessuna)";
+    logLine("Selezione del turno resettata.");
+    document.getElementById("btnResolve").disabled = true;
+    document.getElementById("btnResetTurn").disabled = true;
+    render();
+  }
 
-    /****************************************************
-     * AVVIO
-     ****************************************************/
+  /****************************************************
+   * RENDER UI
+   ****************************************************/
+  function render() {
+    document.getElementById("turnNumber").textContent = gameState.turn;
+    document.getElementById("playerMana").textContent = gameState.playerMana;
+    document.getElementById("deckCount").textContent = gameState.playerDeck.length;
+    document.getElementById("discardCount").textContent = gameState.playerDiscard.length;
 
-    startGame();
-  </script>
+    renderTeam("playerTeam", gameState.playerTeam);
+    renderTeam("botTeam", gameState.botTeam, true);
+    renderHand();
+  }
+
+  function renderTeam(containerId, team, isEnemy = false) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = "";
+    team.forEach(ch => {
+      const div = document.createElement("div");
+      div.className = "char-card" + (isEnemy ? " enemy" : "");
+
+      const name = document.createElement("div");
+      name.className = "char-name";
+      name.textContent = ch.name + (ch.alive ? "" : " (KO)");
+      div.appendChild(name);
+
+      const hpBar = document.createElement("div");
+      hpBar.className = "hp-bar";
+      const hpFill = document.createElement("div");
+      hpFill.className = "hp-fill";
+      const ratio = ch.current.lp / ch.current.lpMax;
+      hpFill.style.width = (Math.max(0, Math.min(1, ratio)) * 100) + "%";
+      hpBar.appendChild(hpFill);
+      div.appendChild(hpBar);
+
+      const effDef = getEffectiveDef(ch);
+
+      const stat = document.createElement("div");
+      stat.className = "stat-line";
+      stat.innerHTML =
+        `LP: ${ch.current.lp}/${ch.current.lpMax}` +
+        ` — ATK: ${ch.current.atk} — DEF: ${effDef}` +
+        `<br/>Scudo: ${ch.shield}`;
+      div.appendChild(stat);
+
+      // Buff visibili (keyword)
+      if (ch.buffs.length > 0) {
+        const buffs = document.createElement("div");
+        buffs.className = "buff-tags";
+
+        // Raggruppiamo per keyword
+        const grouped = {};
+        ch.buffs.forEach(b => {
+          if (!grouped[b.keyword]) grouped[b.keyword] = { stacks: 0, maxDur: 0 };
+          grouped[b.keyword].stacks += (b.data.stacks || 1);
+          grouped[b.keyword].maxDur = Math.max(grouped[b.keyword].maxDur, b.duration);
+        });
+
+        Object.keys(grouped).forEach(key => {
+          const info = grouped[key];
+          const t = document.createElement("span");
+          t.className = "tag buff";
+          t.textContent = `${key} x${info.stacks} (${info.maxDur})`;
+          buffs.appendChild(t);
+        });
+
+        div.appendChild(buffs);
+      }
+
+      // Debuff visibili
+      if (ch.debuffs.length > 0) {
+        const debuffs = document.createElement("div");
+        debuffs.className = "debuff-tags";
+
+        const groupedD = {};
+        ch.debuffs.forEach(d => {
+          if (!groupedD[d.keyword]) groupedD[d.keyword] = { stacks: 0, maxDur: 0 };
+          groupedD[d.keyword].stacks += (d.data.stacks || 1);
+          groupedD[d.keyword].maxDur = Math.max(groupedD[d.keyword].maxDur, d.duration);
+        });
+
+        Object.keys(groupedD).forEach(key => {
+          const info = groupedD[key];
+          const t = document.createElement("span");
+          t.className = "tag debuff";
+          t.textContent = `${key} x${info.stacks} (${info.maxDur})`;
+          debuffs.appendChild(t);
+        });
+
+        div.appendChild(debuffs);
+      }
+
+      div.addEventListener("click", () => onCharacterClick(ch.id, ch.side));
+      container.appendChild(div);
+    });
+  }
+
+  function renderHand() {
+    const handEl = document.getElementById("playerHand");
+    handEl.innerHTML = "";
+    gameState.playerHand.forEach(card => {
+      const btn = document.createElement("button");
+      btn.className = "card-btn player";
+      btn.addEventListener("click", () => onCardClick(card.id));
+
+      const name = document.createElement("div");
+      name.className = "card-name";
+      name.textContent = card.name;
+      btn.appendChild(name);
+
+      const owner = document.createElement("div");
+      owner.className = "card-owner";
+      owner.textContent = `PG: ${card.owner}`;
+      btn.appendChild(owner);
+
+      const cost = document.createElement("div");
+      cost.className = "card-cost";
+      cost.textContent = card.cost;
+      btn.appendChild(cost);
+
+      const desc = document.createElement("div");
+      desc.className = "card-desc";
+      desc.textContent = card.desc;
+      btn.appendChild(desc);
+
+      handEl.appendChild(btn);
+    });
+  }
+
+  function updateUIPhase() {
+    const phaseLabel = document.getElementById("phaseLabel");
+    let text = "";
+    switch (gameState.phase) {
+      case "draw": text = "Pescata"; break;
+      case "play": text = "Giocata carte"; break;
+      case "resolve": text = "Risoluzione carte"; break;
+      case "enemy": text = "Turno del Bot"; break;
+      case "ended": text = "Partita terminata"; break;
+      default: text = "-";
+    }
+    phaseLabel.textContent = text;
+  }
+
+  /****************************************************
+   * EVENT LISTENERS
+   ****************************************************/
+  document.getElementById("btnResolve").addEventListener("click", () => {
+    endPlayerTurnAndResolve();
+    document.getElementById("btnResolve").disabled = true;
+    document.getElementById("btnResetTurn").disabled = true;
+  });
+
+  document.getElementById("btnResetTurn").addEventListener("click", () => {
+    resetTurnSelection();
+  });
+
+  /****************************************************
+   * AVVIO
+   ****************************************************/
+  startGame();
+</script>
 </body>
 </html>
