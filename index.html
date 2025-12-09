@@ -1670,6 +1670,26 @@
           if (buffs.children.length > 0) div.appendChild(buffs);
         }
 
+        function buildPlayerDeck() {
+  // Per ora: 2 copie di ogni carta dei 3 PG player (Basil, Gael, Zagrok)
+  const baseIds = allCards
+    .filter(c =>
+      c.owner === "Basil" ||
+      c.owner === "Gael" ||
+      c.owner === "Zagrok"
+    )
+    .map(c => c.id);
+
+  const deck = [];
+  baseIds.forEach(id => {
+    const card = allCards.find(c => c.id === id);
+    if (!card) return;
+    deck.push({ ...card });
+    deck.push({ ...card }); // 2 copie
+  });
+  return deck;
+}
+        
         if (ch.debuffs.length > 0) {
           const debuffs = document.createElement("div");
           debuffs.className = "debuff-tags";
