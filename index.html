@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <title>Neeva – Combat Base</title>
+  <title>Neeva – Core Combat Test (Crit incluso)</title>
   <style>
     body {
       font-family: system-ui, sans-serif;
@@ -56,17 +56,11 @@
       border-radius: 6px;
       padding: 6px;
       border: 1px solid #374151;
-      width: 170px;
-      cursor: pointer;
+      width: 190px;
+      font-size: 11px;
     }
     .char-card.enemy {
       border-color: #7f1d1d;
-    }
-    .char-card.selected {
-      box-shadow: 0 0 0 2px #facc15;
-    }
-    .char-card.target {
-      box-shadow: 0 0 0 2px #38bdf8;
     }
     .char-name {
       font-weight: 600;
@@ -84,16 +78,28 @@
       height: 100%;
       background: #22c55e;
     }
-    .stat-line {
-      font-size: 11px;
-      color: #9ca3af;
+    .stat-block {
+      margin-bottom: 2px;
       line-height: 1.3;
+    }
+    .stat-label {
+      color: #9ca3af;
     }
     .controls {
       margin-top: 8px;
       display: flex;
-      gap: 6px;
       flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      font-size: 12px;
+    }
+    select, input[type="number"] {
+      background: #020617;
+      border-radius: 6px;
+      border: 1px solid #4b5563;
+      color: #e5e7eb;
+      padding: 4px 6px;
+      font-size: 12px;
     }
     button {
       background: #1d4ed8;
@@ -113,7 +119,7 @@
     }
     .log {
       font-size: 11px;
-      max-height: 320px;
+      max-height: 380px;
       overflow-y: auto;
       background: #020617;
       border-radius: 6px;
@@ -127,434 +133,487 @@
     .log-turn {
       color: #60a5fa;
       font-weight: 600;
+      margin-top: 4px;
     }
-    .info-row {
+    .mana-label {
       font-size: 12px;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
+    }
+    .mana-value {
+      font-weight: 700;
+    }
+    .phase-label {
+      font-size: 11px;
       color: #9ca3af;
+      margin-bottom: 4px;
     }
   </style>
 </head>
 <body>
-  <header>
+<header>
+  <div>
+    <h1>Neeva — Core Combat Test</h1>
+    <small>Solo combattimento & crit — niente deck, niente carte (per ora)</small>
+  </div>
+  <div style="font-size:12px;color:#9ca3af">
+    Turno globale: <strong><span id="turnNumber">1</span></strong> —
+    Lato attivo: <strong><span id="activeSideLabel">Player</span></strong>
+  </div>
+</header>
+
+<main>
+  <!-- COLONNA SINISTRA: Campo + Controlli -->
+  <div class="column">
+    <div class="section-title">Campo di Battaglia</div>
+    <div class="phase-label">
+      Fase: <span id="phaseLabel">-</span>
+    </div>
+
     <div>
-      <h1>Neeva — Combat Prototype</h1>
-      <small>Base 3v3, turni globali, critici completi</small>
-    </div>
-    <div style="font-size:12px;color:#9ca3af">
-      Turno globale: <strong><span id="turnNumber">1</span></strong> —
-      Lato attivo: <strong><span id="currentSideLabel">Player</span></strong>
-    </div>
-  </header>
-
-  <main>
-    <!-- COLONNA SINISTRA: Campo -->
-    <div class="column">
-      <div class="section-title">Campo di Battaglia</div>
-
-      <div class="info-row">
-        Seleziona <strong>prima</strong> un tuo personaggio, poi un nemico, poi clicca
-        <strong>Attacco base</strong>.
-      </div>
-
-      <div>
-        <div style="font-size:12px;font-weight:600;margin-bottom:2px;">Il tuo team</div>
-        <div class="team" id="playerTeam"></div>
-      </div>
-
-      <div>
-        <div style="font-size:12px;font-weight:600;margin:6px 0 2px;">Team avversario</div>
-        <div class="team" id="botTeam"></div>
-      </div>
-
-      <div class="controls">
-        <button id="btnBaseAttack" disabled>Attacco base (PG selezionato → bersaglio selezionato)</button>
-        <button id="btnEndPlayerTurn" class="secondary">Fine turno senza attaccare</button>
-        <button id="btnResetSelection" class="secondary">Reset selezione</button>
-      </div>
+      <div style="font-size:12px;font-weight:600;margin-bottom:2px;">Il tuo team</div>
+      <div class="team" id="playerTeam"></div>
     </div>
 
-    <!-- COLONNA DESTRA: Log -->
-    <div class="column">
-      <div class="section-title">Log di gioco</div>
-      <div id="log" class="log"></div>
+    <div>
+      <div style="font-size:12px;font-weight:600;margin:6px 0 2px;">Team avversario</div>
+      <div class="team" id="botTeam"></div>
     </div>
-  </main>
 
-  <script>
-    /****************************************************
-     * MODELLO BASE
-     ****************************************************/
-    const gameState = {
-      globalTurn: 1,          // 1 = player, 2 = bot, 3 = player, ...
-      currentSide: "player",  // "player" | "bot"
-      playerTeam: [],
-      botTeam: [],
-      selectedAttackerId: null,
-      selectedTargetId: null
+    <div style="margin-top:10px;" class="section-title">Controlli turno giocatore</div>
+    <div class="controls">
+      <label>
+        Attaccante:
+        <select id="selectAttacker"></select>
+      </label>
+      <label>
+        Bersaglio:
+        <select id="selectTarget"></select>
+      </label>
+      <label>
+        VC:
+        <input id="inputVC" type="number" step="0.05" min="0" value="1" style="width:60px;" />
+      </label>
+      <button id="btnAttack">Attacca</button>
+      <button id="btnEndTurn" class="secondary">Passa turno</button>
+    </div>
+    <div style="font-size:11px;color:#9ca3af;margin-top:4px;">
+      Regole critico usate:<br/>
+      • Chance effettiva = CritChance attaccante − CritResist difensore (min 0, max 100).<br/>
+      • Se il tiro 1–100 ≤ chance effettiva → <strong>colpo critico</strong>.<br/>
+      • Danno base = ATK × VC.<br/>
+      • Critico: dannoCrit = base × (CritDamage% − CritDef%) / 100 (min 0), poi −DEF.<br/>
+      • Non critico: danno = base − DEF.
+    </div>
+  </div>
+
+  <!-- COLONNA DESTRA: Log -->
+  <div class="column">
+    <div class="section-title">Log di combattimento</div>
+    <div id="log" class="log"></div>
+  </div>
+</main>
+
+<script>
+  /****************************************************
+   * STATO DI GIOCO BASE
+   ****************************************************/
+
+  const gameState = {
+    globalTurn: 1,        // 1 = player, 2 = bot, 3 = player, ...
+    currentSide: "player",// "player" | "bot"
+    phase: "player",      // "player" | "bot" | "ended"
+    playerTeam: [],
+    botTeam: []
+  };
+
+  /****************************************************
+   * MODELLI PERSONAGGI (STAT COMPLETE)
+   ****************************************************/
+
+  function createCharacter(id, name, side, stats) {
+    return {
+      id,
+      name,
+      side, // "player" | "bot"
+      base: { ...stats },
+      current: { ...stats },
+      alive: true
     };
+  }
 
-    function createCharacter(id, name, side, stats) {
-      return {
-        id,
-        name,
-        side, // "player" | "bot"
-        base: { ...stats },
-        current: { ...stats },
-        shield: 0,
-        alive: true
-      };
+  function initTeams() {
+    gameState.playerTeam = [
+      // 🟦 BASIL — Tank Support
+      createCharacter("basil", "Basil", "player", {
+        lp: 980, lpMax: 980,
+        atk: 63,
+        def: 27,
+        critChance: 60,    // %
+        critDmg: 120,      // %
+        critResist: 22,    // %
+        critDef: 47        // %
+      }),
+      // 🟥 GAEL — Bruiser Difensivo
+      createCharacter("gael", "Gael", "player", {
+        lp: 900, lpMax: 900,
+        atk: 72,
+        def: 11,
+        critChance: 30,
+        critDmg: 150,
+        critResist: 10,
+        critDef: 25
+      }),
+      // 🟩 ZAGROK — Bruiser Offensivo
+      createCharacter("zagrok", "Zagrok", "player", {
+        lp: 830, lpMax: 830,
+        atk: 68,
+        def: 13,
+        critChance: 30,
+        critDmg: 150,
+        critResist: 30,
+        critDef: 20
+      })
+    ];
+
+    gameState.botTeam = [
+      // 🟫 MORDEL — Tank Debuffer
+      createCharacter("mordel", "Mordel", "bot", {
+        lp: 1020, lpMax: 1020,
+        atk: 60,
+        def: 32,
+        critChance: 25,
+        critDmg: 150,
+        critResist: 25,
+        critDef: 33
+      }),
+      // 🟪 KIDDOU — Crit Support
+      createCharacter("kiddou", "Kiddou", "bot", {
+        lp: 820, lpMax: 820,
+        atk: 58,
+        def: 23,
+        critChance: 40,
+        critDmg: 160,
+        critResist: 20,
+        critDef: 26
+      }),
+      // 💜 RINDU — Bruiser Offensivo
+      createCharacter("rindu", "Rindu", "bot", {
+        lp: 860, lpMax: 860,
+        atk: 78,
+        def: 28,
+        critChance: 28,
+        critDmg: 150,
+        critResist: 20,
+        critDef: 22
+      })
+    ];
+  }
+
+  function getTeam(side) {
+    return side === "player" ? gameState.playerTeam : gameState.botTeam;
+  }
+
+  function getOpposingTeam(side) {
+    return side === "player" ? gameState.botTeam : gameState.playerTeam;
+  }
+
+  /****************************************************
+   * LOG
+   ****************************************************/
+
+  const logEl = document.getElementById("log");
+
+  function logLine(text, isTurnHeader = false) {
+    const div = document.createElement("div");
+    div.className = "log-line" + (isTurnHeader ? " log-turn" : "");
+    div.textContent = text;
+    logEl.appendChild(div);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  /****************************************************
+   * COMBATTIMENTO CON CRIT
+   ****************************************************/
+
+  /**
+   * Esegue un attacco con VC e sistema critico.
+   * Ritorna il danno finale inflitto ai LP (dopo DEF).
+   */
+  function attackWithCrit(source, target, vc) {
+    if (!source.alive || !target.alive) return 0;
+    if (vc < 0) vc = 0;
+
+    const s = source.current;
+    const t = target.current;
+
+    const baseRaw = Math.round(s.atk * vc);
+
+    // chance effettiva: CritChance attaccante - CritResist difensore
+    let effChance = s.critChance - t.critResist;
+    if (effChance < 0) effChance = 0;
+    if (effChance > 100) effChance = 100;
+
+    const roll = Math.floor(Math.random() * 100) + 1;
+    const isCrit = roll <= effChance;
+
+    let damageBeforeDef;
+    let logDetails = `ATK ${s.atk} × VC ${vc.toFixed(2)} = base ${baseRaw}. `;
+
+    if (isCrit) {
+      // critDamageEff = (CritDamage% - CritDef%) / 100, min 0
+      let critEffPercent = s.critDmg - t.critDef;
+      if (critEffPercent < 0) critEffPercent = 0;
+      const critMultiplier = critEffPercent / 100;
+      damageBeforeDef = Math.round(baseRaw * critMultiplier);
+      logDetails += `(CRIT: (CritDmg ${s.critDmg}% − CritDef ${t.critDef}%) = ${critEffPercent}%, ` +
+                    `moltiplicatore ${critMultiplier.toFixed(2)} → ${damageBeforeDef}). `;
+    } else {
+      damageBeforeDef = baseRaw;
+      logDetails += `(non critico). `;
     }
 
-    function initTeams() {
-      // Qui ho messo le stat aggiornate che hai definito (o vicine)
-      gameState.playerTeam = [
-        createCharacter("basil", "Basil", "player", {
-          lp: 980, lpMax: 980,
-          atk: 63, def: 27,
-          critChance: 60,   // %
-          critDmg: 120,     // %
-          critResist: 22,   // %
-          critDef: 47       // valore piatto
-        }),
-        createCharacter("gael", "Gael", "player", {
-          lp: 900, lpMax: 900,
-          atk: 72, def: 11,
-          critChance: 30,
-          critDmg: 150,
-          critResist: 10,
-          critDef: 25
-        }),
-        createCharacter("zagrok", "Zagrok", "player", {
-          lp: 830, lpMax: 830,
-          atk: 68, def: 13,
-          critChance: 30,
-          critDmg: 150,
-          critResist: 30,
-          critDef: 20
-        })
-      ];
+    const damageAfterDef = Math.max(0, damageBeforeDef - t.def);
+    logDetails += `− DEF ${t.def} = danno finale ${damageAfterDef}.`;
 
-      gameState.botTeam = [
-        createCharacter("mordel", "Mordel", "bot", {
-          lp: 1020, lpMax: 1020,
-          atk: 60, def: 32,
-          critChance: 25,
-          critDmg: 150,
-          critResist: 25,
-          critDef: 33
-        }),
-        createCharacter("kiddou", "Kiddou", "bot", {
-          lp: 820, lpMax: 820,
-          atk: 58, def: 23,
-          critChance: 40,
-          critDmg: 160,
-          critResist: 20,
-          critDef: 26
-        }),
-        createCharacter("rindu", "Rindu", "bot", {
-          lp: 860, lpMax: 860,
-          atk: 78, def: 28,
-          critChance: 28,
-          critDmg: 150,
-          critResist: 20,
-          critDef: 22
-        })
-      ];
+    if (damageAfterDef <= 0) {
+      logLine(`${source.name} attacca ${target.name}: nessun danno ai LP. ${logDetails}`);
+      return 0;
     }
 
-    /****************************************************
-     * LOG
-     ****************************************************/
-    const logEl = document.getElementById("log");
+    const newLp = Math.max(0, t.lp - damageAfterDef);
+    const lost = t.lp - newLp;
+    t.lp = newLp;
 
-    function logLine(text, isTurnHeader = false) {
-      const div = document.createElement("div");
-      div.className = "log-line" + (isTurnHeader ? " log-turn" : "");
-      div.textContent = text;
-      logEl.appendChild(div);
-      logEl.scrollTop = logEl.scrollHeight;
+    logLine(
+      `${source.name} attacca ${target.name} ` +
+      (isCrit ? `💥 CRITICO! ` : ``) +
+      `e infligge ${lost} danni.`
+    );
+    logLine(`  Dettaglio: ${logDetails}`);
+
+    if (t.lp <= 0) {
+      target.alive = false;
+      logLine(`${target.name} è stato sconfitto!`);
     }
 
-    /****************************************************
-     * FUNZIONI UTILI
-     ****************************************************/
-    function getTeam(side) {
-      return side === "player" ? gameState.playerTeam : gameState.botTeam;
-    }
+    return lost;
+  }
 
-    function getOpposingTeam(side) {
-      return side === "player" ? gameState.botTeam : gameState.playerTeam;
-    }
+  /****************************************************
+   * TURNI
+   ****************************************************/
 
-    function findCharById(id) {
-      return (
-        gameState.playerTeam.find(c => c.id === id) ||
-        gameState.botTeam.find(c => c.id === id)
-      );
-    }
+  function startGame() {
+    initTeams();
+    gameState.globalTurn = 1;
+    gameState.currentSide = "player";
+    gameState.phase = "player";
+    logEl.innerHTML = "";
+    logLine("Inizio partita Neeva — test combattimento & crit.");
+    logLine(`— TURNO ${gameState.globalTurn} (GIOCATORE) —`, true);
+    updateUIPhase();
+    render();
+    updateSelectors();
+  }
 
-    /****************************************************
-     * COMBATTIMENTO CON CRITICO
-     ****************************************************/
-    function baseAttack(attacker, target) {
-      if (!attacker.alive || !target.alive) return 0;
+  function endPlayerTurn() {
+    if (gameState.phase !== "player") return;
+    gameState.phase = "bot";
+    gameState.globalTurn += 1;
+    gameState.currentSide = "bot";
+    updateUIPhase();
+    render();
 
-      // 1) Calcolo se critico
-      const effCritChance = Math.max(0, (attacker.current.critChance || 0) - (target.current.critResist || 0));
-      const roll = Math.floor(Math.random() * 100) + 1; // 1-100
-      const isCrit = roll <= effCritChance;
+    logLine("");
+    logLine(`— TURNO ${gameState.globalTurn} (BOT) —`, true);
 
-      let rawDamage;
-      if (isCrit) {
-        // ATK * (CritDmg%) - CritDef
-        const critMultiplier = (attacker.current.critDmg || 100) / 100;
-        rawDamage = Math.round(attacker.current.atk * critMultiplier);
-        rawDamage -= (target.current.critDef || 0);
-        logLine(`${attacker.name} colpisce CRITICO ${target.name}! (roll ${roll} ≤ ${effCritChance})`);
-      } else {
-        rawDamage = attacker.current.atk;
-        logLine(`${attacker.name} attacca ${target.name} (roll ${roll} > ${effCritChance}, niente critico).`);
-      }
+    botAction();
 
-      if (rawDamage < 0) rawDamage = 0;
+    if (checkEndGame()) return;
 
-      // 2) Scudo
-      let remaining = rawDamage;
-      if (target.shield > 0) {
-        const absorbed = Math.min(target.shield, remaining);
-        target.shield -= absorbed;
-        remaining -= absorbed;
-        logLine(`${target.name} assorbe ${absorbed} danni con lo Scudo.`);
-      }
+    // passa di nuovo al giocatore
+    gameState.phase = "player";
+    gameState.globalTurn += 1;
+    gameState.currentSide = "player";
+    logLine("");
+    logLine(`— TURNO ${gameState.globalTurn} (GIOCATORE) —`, true);
+    updateUIPhase();
+    render();
+    updateSelectors();
+  }
 
-      if (remaining <= 0) {
-        logLine(`Il colpo non supera lo scudo di ${target.name}.`);
-        return 0;
-      }
+  function botAction() {
+    const botTeam = getTeam("bot").filter(c => c.alive);
+    const playerTeam = getTeam("player").filter(c => c.alive);
+    if (botTeam.length === 0 || playerTeam.length === 0) return;
 
-      // 3) Difesa
-      const def = target.current.def || 0;
-      const finalDamage = Math.max(0, remaining - def);
+    const attacker = botTeam[Math.floor(Math.random() * botTeam.length)];
+    const target = playerTeam[Math.floor(Math.random() * playerTeam.length)];
 
-      if (finalDamage <= 0) {
-        logLine(`La DIFESA di ${target.name} annulla il colpo.`);
-        return 0;
-      }
+    logLine(`${attacker.name} sceglie ${target.name} come bersaglio.`);
+    attackWithCrit(attacker, target, 1.0); // VC fisso 1 per il bot
+  }
 
-      // 4) Applica danno
-      target.current.lp = Math.max(0, target.current.lp - finalDamage);
-      logLine(`${attacker.name} infligge ${finalDamage} danni effettivi a ${target.name}. LP rimanenti: ${target.current.lp}/${target.current.lpMax}`);
+  function checkEndGame() {
+    const playerAlive = gameState.playerTeam.some(c => c.alive);
+    const botAlive = gameState.botTeam.some(c => c.alive);
 
-      if (target.current.lp <= 0) {
-        target.alive = false;
-        logLine(`${target.name} è stato sconfitto!`);
-      }
-
-      return finalDamage;
-    }
-
-    /****************************************************
-     * TURNI
-     ****************************************************/
-    function startGame() {
-      initTeams();
-      gameState.globalTurn = 1;
-      gameState.currentSide = "player";
-      gameState.selectedAttackerId = null;
-      gameState.selectedTargetId = null;
-      logEl.innerHTML = "";
-      logLine("Inizio partita.");
-      logLine(`— TURNO ${gameState.globalTurn} (Player) —`, true);
-      render();
-    }
-
-    function endPlayerTurn() {
-      // Controllo fine partita prima di far muovere il bot
-      if (checkEndGame()) return;
-
-      gameState.currentSide = "bot";
-      gameState.globalTurn += 1;
+    if (!playerAlive || !botAlive) {
       logLine("");
-      logLine(`— TURNO ${gameState.globalTurn} (Bot) —`, true);
-      render();
-      botAct();
-    }
-
-    function botAct() {
-      const aliveBot = gameState.botTeam.filter(c => c.alive);
-      const alivePlayer = gameState.playerTeam.filter(c => c.alive);
-      if (aliveBot.length === 0 || alivePlayer.length === 0) {
-        checkEndGame();
-        return;
-      }
-      const attacker = aliveBot[Math.floor(Math.random() * aliveBot.length)];
-      const target = alivePlayer[Math.floor(Math.random() * alivePlayer.length)];
-
-      logLine(`${attacker.name} (Bot) prepara un attacco base su ${target.name}.`);
-      baseAttack(attacker, target);
-      render();
-
-      if (checkEndGame()) return;
-
-      // Passa di nuovo al player
-      gameState.currentSide = "player";
-      gameState.globalTurn += 1;
-      logLine("");
-      logLine(`— TURNO ${gameState.globalTurn} (Player) —`, true);
-      resetSelection();
-      render();
-    }
-
-    function checkEndGame() {
-      const playerAlive = gameState.playerTeam.some(c => c.alive);
-      const botAlive = gameState.botTeam.some(c => c.alive);
-      if (!playerAlive || !botAlive) {
-        logLine("");
-        if (playerAlive && !botAlive) {
-          logLine("HAI VINTO!", true);
-        } else if (!playerAlive && botAlive) {
-          logLine("HAI PERSO!", true);
-        } else {
-          logLine("PAREGGIO: tutti i personaggi sono KO.", true);
-        }
-        return true;
-      }
-      return false;
-    }
-
-    /****************************************************
-     * SELEZIONE ATTACCANTE / BERSAGLIO
-     ****************************************************/
-    function onCharacterClick(charId, side) {
-      if (gameState.currentSide !== "player") return; // solo nel tuo turno
-
-      const ch = findCharById(charId);
-      if (!ch || !ch.alive) return;
-
-      // Se clicchi un tuo PG → selezioni ATTACCANTE
-      if (side === "player") {
-        gameState.selectedAttackerId = ch.id;
-        // se il bersaglio era dello stesso lato, lo deselezioniamo
-        if (gameState.selectedTargetId && findCharById(gameState.selectedTargetId).side === "player") {
-          gameState.selectedTargetId = null;
-        }
+      if (playerAlive && !botAlive) {
+        logLine("🎉 HAI VINTO!", true);
+      } else if (!playerAlive && botAlive) {
+        logLine("💀 HAI PERSO!", true);
       } else {
-        // Se clicchi un nemico → selezioni BERSAGLIO
-        gameState.selectedTargetId = ch.id;
+        logLine("⚖️ PAREGGIO (tutti i PG sconfitti).", true);
       }
-
-      updateAttackButtonState();
-      render();
+      gameState.phase = "ended";
+      updateUIPhase();
+      return true;
     }
+    return false;
+  }
 
-    function updateAttackButtonState() {
-      const btn = document.getElementById("btnBaseAttack");
-      const attacker = gameState.selectedAttackerId ? findCharById(gameState.selectedAttackerId) : null;
-      const target = gameState.selectedTargetId ? findCharById(gameState.selectedTargetId) : null;
+  /****************************************************
+   * UI
+   ****************************************************/
 
-      if (
-        gameState.currentSide === "player" &&
-        attacker && target &&
-        attacker.side === "player" &&
-        target.side === "bot" &&
-        attacker.alive && target.alive
-      ) {
-        btn.disabled = false;
-      } else {
-        btn.disabled = true;
-      }
-    }
+  const turnNumberEl = document.getElementById("turnNumber");
+  const activeSideLabelEl = document.getElementById("activeSideLabel");
+  const phaseLabelEl = document.getElementById("phaseLabel");
 
-    function playerBaseAttack() {
-      const attacker = findCharById(gameState.selectedAttackerId);
-      const target = findCharById(gameState.selectedTargetId);
-      if (!attacker || !target) return;
-      if (!attacker.alive || !target.alive) return;
+  function updateUIPhase() {
+    turnNumberEl.textContent = gameState.globalTurn;
+    activeSideLabelEl.textContent =
+      gameState.currentSide === "player" ? "Player" : "Bot";
 
-      baseAttack(attacker, target);
-      render();
-      if (checkEndGame()) return;
+    let txt = "-";
+    if (gameState.phase === "player") txt = "Turno del Giocatore";
+    else if (gameState.phase === "bot") txt = "Turno del Bot";
+    else if (gameState.phase === "ended") txt = "Partita terminata";
+    phaseLabelEl.textContent = txt;
 
-      // Dopo l'attacco, termina subito il turno del player (per ora)
-      endPlayerTurn();
-    }
+    document.getElementById("btnAttack").disabled = (gameState.phase !== "player");
+    document.getElementById("btnEndTurn").disabled = (gameState.phase !== "player");
+  }
 
-    function resetSelection() {
-      gameState.selectedAttackerId = null;
-      gameState.selectedTargetId = null;
-      updateAttackButtonState();
-      render();
-    }
+  function render() {
+    renderTeam("playerTeam", gameState.playerTeam);
+    renderTeam("botTeam", gameState.botTeam, true);
+  }
 
-    /****************************************************
-     * RENDER
-     ****************************************************/
-    function render() {
-      document.getElementById("turnNumber").textContent = gameState.globalTurn;
-      document.getElementById("currentSideLabel").textContent =
-        gameState.currentSide === "player" ? "Player" : "Bot";
+  function renderTeam(containerId, team, isEnemy = false) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = "";
+    team.forEach(ch => {
+      const c = ch.current;
+      const card = document.createElement("div");
+      card.className = "char-card" + (isEnemy ? " enemy" : "");
 
-      renderTeam("playerTeam", gameState.playerTeam, false);
-      renderTeam("botTeam", gameState.botTeam, true);
-    }
+      const nameDiv = document.createElement("div");
+      nameDiv.className = "char-name";
+      nameDiv.textContent = ch.name + (ch.alive ? "" : " (KO)");
+      card.appendChild(nameDiv);
 
-    function renderTeam(containerId, team, isEnemy) {
-      const container = document.getElementById(containerId);
-      container.innerHTML = "";
-      team.forEach(ch => {
-        const div = document.createElement("div");
-        div.className = "char-card" + (isEnemy ? " enemy" : "");
+      const hpBar = document.createElement("div");
+      hpBar.className = "hp-bar";
+      const hpFill = document.createElement("div");
+      hpFill.className = "hp-fill";
+      const ratio = c.lp / c.lpMax;
+      hpFill.style.width = (Math.max(0, Math.min(1, ratio)) * 100) + "%";
+      hpBar.appendChild(hpFill);
+      card.appendChild(hpBar);
 
-        if (ch.id === gameState.selectedAttackerId) {
-          div.classList.add("selected");
-        }
-        if (ch.id === gameState.selectedTargetId) {
-          div.classList.add("target");
-        }
+      const stat1 = document.createElement("div");
+      stat1.className = "stat-block";
+      stat1.innerHTML =
+        `<span class="stat-label">LP:</span> ${c.lp}/${c.lpMax}<br>` +
+        `<span class="stat-label">ATK:</span> ${c.atk} — ` +
+        `<span class="stat-label">DEF:</span> ${c.def}`;
+      card.appendChild(stat1);
 
-        const name = document.createElement("div");
-        name.className = "char-name";
-        name.textContent = ch.name + (ch.alive ? "" : " (KO)");
-        div.appendChild(name);
+      const stat2 = document.createElement("div");
+      stat2.className = "stat-block";
+      stat2.innerHTML =
+        `<span class="stat-label">Crit%</span> ${c.critChance}% — ` +
+        `<span class="stat-label">CritDmg:</span> ${c.critDmg}%<br>` +
+        `<span class="stat-label">CritResist:</span> ${c.critResist}% — ` +
+        `<span class="stat-label">CritDef:</span> ${c.critDef}%`;
+      card.appendChild(stat2);
 
-        const hpBar = document.createElement("div");
-        hpBar.className = "hp-bar";
-        const hpFill = document.createElement("div");
-        hpFill.className = "hp-fill";
-        const ratio = ch.current.lp / ch.current.lpMax;
-        hpFill.style.width = (Math.max(0, Math.min(1, ratio)) * 100) + "%";
-        hpBar.appendChild(hpFill);
-        div.appendChild(hpBar);
-
-        const stat = document.createElement("div");
-        stat.className = "stat-line";
-        stat.innerHTML =
-          `LP: ${ch.current.lp}/${ch.current.lpMax}<br>` +
-          `ATK: ${ch.current.atk} — DEF: ${ch.current.def}<br>` +
-          `Crit: ${ch.current.critChance}% / ${ch.current.critDmg}%<br>` +
-          `CritResist: ${ch.current.critResist}% — CritDef: ${ch.current.critDef}`;
-        div.appendChild(stat);
-
-        div.addEventListener("click", () => onCharacterClick(ch.id, ch.side));
-        container.appendChild(div);
-      });
-    }
-
-    /****************************************************
-     * EVENT LISTENERS
-     ****************************************************/
-    document.getElementById("btnBaseAttack").addEventListener("click", playerBaseAttack);
-    document.getElementById("btnEndPlayerTurn").addEventListener("click", () => {
-      if (gameState.currentSide !== "player") return;
-      endPlayerTurn();
+      container.appendChild(card);
     });
-    document.getElementById("btnResetSelection").addEventListener("click", resetSelection);
+  }
 
-    /****************************************************
-     * AVVIO
-     ****************************************************/
-    startGame();
-  </script>
+  // Selettori attaccante/bersaglio
+  const selectAttacker = document.getElementById("selectAttacker");
+  const selectTarget = document.getElementById("selectTarget");
+  const inputVC = document.getElementById("inputVC");
+
+  function updateSelectors() {
+    // attaccanti = solo team player vivi
+    selectAttacker.innerHTML = "";
+    getTeam("player").forEach(ch => {
+      if (!ch.alive) return;
+      const opt = document.createElement("option");
+      opt.value = ch.id;
+      opt.textContent = ch.name;
+      selectAttacker.appendChild(opt);
+    });
+
+    // bersagli = solo bot vivi
+    selectTarget.innerHTML = "";
+    getTeam("bot").forEach(ch => {
+      if (!ch.alive) return;
+      const opt = document.createElement("option");
+      opt.value = ch.id;
+      opt.textContent = ch.name;
+      selectTarget.appendChild(opt);
+    });
+
+    // se uno dei due è vuoto, disattiva attacco
+    const canAttack = selectAttacker.options.length > 0 && selectTarget.options.length > 0;
+    document.getElementById("btnAttack").disabled = !canAttack || gameState.phase !== "player";
+  }
+
+  /****************************************************
+   * EVENTI
+   ****************************************************/
+
+  document.getElementById("btnAttack").addEventListener("click", () => {
+    if (gameState.phase !== "player") return;
+    const attackerId = selectAttacker.value;
+    const targetId = selectTarget.value;
+    if (!attackerId || !targetId) {
+      alert("Seleziona attaccante e bersaglio.");
+      return;
+    }
+    const attacker = getTeam("player").find(c => c.id === attackerId);
+    const target = getTeam("bot").find(c => c.id === targetId);
+    if (!attacker || !target || !attacker.alive || !target.alive) {
+      alert("Attaccante o bersaglio non valido.");
+      return;
+    }
+    let vc = parseFloat(inputVC.value);
+    if (isNaN(vc)) vc = 1;
+
+    logLine(`Il giocatore dichiara attacco: ${attacker.name} → ${target.name} (VC ${vc.toFixed(2)}).`);
+    attackWithCrit(attacker, target, vc);
+    render();
+    updateSelectors();
+    checkEndGame();
+  });
+
+  document.getElementById("btnEndTurn").addEventListener("click", () => {
+    if (gameState.phase !== "player") return;
+    endPlayerTurn();
+  });
+
+  /****************************************************
+   * AVVIO
+   ****************************************************/
+
+  startGame();
+</script>
 </body>
 </html>
