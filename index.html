@@ -316,9 +316,7 @@
   /*********************
    * Formule di danno
    *********************/
-  // Usa ESATTAMENTE le formule concordate:
-  // VC in %, CRIT_DMG in %, CRIT_DEF valore fisso,
-  // DEF solo per colpo non critico.
+  // RITORNA ANCHE TUTTI I DETTAGLI DEL CALCOLO
   function calculateDamage(att, def, VC) {
     const vcFactor = VC / 100;
     const atkCard = att.ATK * vcFactor;  // ATK_carta
@@ -328,8 +326,10 @@
     if (critChanceEff > 100) critChanceEff = 100;
 
     let isCrit = false;
+    let roll = null;
+
     if (critChanceEff > 0) {
-      const roll = randomInt(1, 100);
+      roll = randomInt(1, 100);
       if (roll <= critChanceEff) {
         isCrit = true;
       }
@@ -338,7 +338,16 @@
     if (!isCrit) {
       const rawNormal = atkCard - def.DEF;
       const dmg = Math.max(0, Math.round(rawNormal));
-      return { damage: dmg, isCrit: false };
+      return {
+        damage: dmg,
+        isCrit: false,
+        roll,
+        critChanceEff,
+        atkCard,
+        rawNormal,
+        critRawAtt: null,
+        critAfterDef: null
+      };
     }
 
     const critFactor = att.CRIT_DMG / 100;
@@ -346,7 +355,16 @@
     const critAfterDef = critRawAtt - def.CRIT_DEF;
     const dmg = Math.max(0, Math.round(critAfterDef));
 
-    return { damage: dmg, isCrit: true };
+    return {
+      damage: dmg,
+      isCrit: true,
+      roll,
+      critChanceEff,
+      atkCard,
+      rawNormal: null,
+      critRawAtt,
+      critAfterDef
+    };
   }
 
   /*********************
@@ -621,7 +639,6 @@
     if (alive.length === 0 || checkEnd()) return;
     activeSide = "player";
     activeUnit = alive[randomInt(0, alive.length - 1)];
-    // mano di 5 carte random dalla pool dei vivi
     const pool = playerCardsPool.filter(c => !getCharById(c.ownerId).isDead);
     currentHand = [];
     for (let i = 0; i < 5 && pool.length > 0; i++) {
@@ -665,22 +682,56 @@
     playCardSingle(card, target);
   }
 
+  function logCritDetails(caster, target, card, res, sideType) {
+    const who = sideType === "player" ? "Giocatore" : "Nemico";
+    // riga riassunto attacco
+    log(
+      `${caster.name} (${who}) usa ${card.name} su ${target.name}: ` +
+      `${res.damage} danni` + (res.isCrit ? " [CRITICO]" : " [normale]"),
+      sideType
+    );
+    // dettagli del tiro critico
+    if (res.critChanceEff !== null && res.critChanceEff !== undefined) {
+      const rollText = res.roll === null ? "n/a" : res.roll;
+      log(
+        `  CritChanceEff = ${res.critChanceEff}%, tiro d100 = ${rollText}` +
+        (res.isCrit ? " → CRIT" : " → NO CRIT"),
+        "system"
+      );
+    }
+    // dettagli atk carta e formula
+    log(`  ATK_carta = ATK (${caster.ATK}) x VC (${card.VC}%) = ${res.atkCard.toFixed(2)}`, "system");
+
+    if (!res.isCrit) {
+      log(
+        `  Danno normale: ATK_carta (${res.atkCard.toFixed(2)}) - DEF (${target.DEF}) = ` +
+        `${res.rawNormal.toFixed(2)} → ${res.damage}`,
+        "system"
+      );
+    } else {
+      log(
+        `  Danno crit: ATK_carta (${res.atkCard.toFixed(2)}) x CRIT_DMG (${caster.CRIT_DMG}%) = ` +
+        `${res.critRawAtt.toFixed(2)}`,
+        "system"
+      );
+      log(
+        `  Applico CRIT_DEF (${target.CRIT_DEF}): ${res.critRawAtt.toFixed(2)} - ${target.CRIT_DEF} = ` +
+        `${res.critAfterDef.toFixed(2)} → ${res.damage}`,
+        "system"
+      );
+    }
+
+    log(`  HP ${target.name}: ${target.hp} / ${target.maxHP}`, "system");
+  }
+
   function playCardSingle(card, target) {
     const caster = getCharById(card.ownerId);
     if (!caster || caster.isDead || target.isDead) return;
 
-    const { damage, isCrit } = calculateDamage(caster, target, card.VC);
-    target.receiveDamage(damage);
+    const res = calculateDamage(caster, target, card.VC);
+    target.receiveDamage(res.damage);
 
-    log(
-      `${caster.name} usa ${card.name} su ${target.name}: ` +
-      `${damage} danni` + (isCrit ? " (CRITICO)" : ""),
-      caster.side === "player" ? "player" : "enemy"
-    );
-    log(
-      `HP ${target.name}: ${target.hp} / ${target.maxHP}`,
-      "system"
-    );
+    logCritDetails(caster, target, card, res, caster.side);
 
     if (target.isDead) {
       log(`${target.name} è stato sconfitto.`, "system");
@@ -705,16 +756,11 @@
     log(`${caster.name} usa ${card.name} (AoE)`, caster.side === "player" ? "player" : "enemy");
 
     for (const target of enemies) {
-      const { damage, isCrit } = calculateDamage(caster, target, card.VC);
-      target.receiveDamage(damage);
-      log(
-        ` → ${target.name} subisce ${damage} danni` + (isCrit ? " (CRITICO)" : ""),
-        caster.side === "player" ? "player" : "enemy"
-      );
-      log(
-        `   HP ${target.name}: ${target.hp} / ${target.maxHP}`,
-        "system"
-      );
+      const res = calculateDamage(caster, target, card.VC);
+      target.receiveDamage(res.damage);
+
+      logCritDetails(caster, target, card, res, caster.side);
+
       if (target.isDead) {
         log(`${target.name} è stato sconfitto.`, "system");
       }
@@ -752,18 +798,10 @@
     const caster = getCharById(card.ownerId);
     if (!caster || caster.isDead || target.isDead) return;
 
-    const { damage, isCrit } = calculateDamage(caster, target, card.VC);
-    target.receiveDamage(damage);
+    const res = calculateDamage(caster, target, card.VC);
+    target.receiveDamage(res.damage);
 
-    log(
-      `${caster.name} (nemico) usa ${card.name} su ${target.name}: ` +
-      `${damage} danni` + (isCrit ? " (CRITICO)" : ""),
-      "enemy"
-    );
-    log(
-      `HP ${target.name}: ${target.hp} / ${target.maxHP}`,
-      "system"
-    );
+    logCritDetails(caster, target, card, res, "enemy");
 
     if (target.isDead) {
       log(`${target.name} è stato sconfitto.`, "system");
@@ -785,16 +823,11 @@
     log(`${caster.name} (nemico) usa ${card.name} (AoE)`, "enemy");
 
     for (const target of enemies) {
-      const { damage, isCrit } = calculateDamage(caster, target, card.VC);
-      target.receiveDamage(damage);
-      log(
-        ` → ${target.name} subisce ${damage} danni` + (isCrit ? " (CRITICO)" : ""),
-        "enemy"
-      );
-      log(
-        `   HP ${target.name}: ${target.hp} / ${target.maxHP}`,
-        "system"
-      );
+      const res = calculateDamage(caster, target, card.VC);
+      target.receiveDamage(res.damage);
+
+      logCritDetails(caster, target, card, res, "enemy");
+
       if (target.isDead) {
         log(`${target.name} è stato sconfitto.`, "system");
       }
